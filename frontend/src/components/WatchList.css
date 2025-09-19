@@ -1,0 +1,367 @@
+.watchlist-page {
+  min-height: 100vh;
+  background: #f8f9fa;
+}
+
+
+/* Main Content */
+.watchlist-content {
+  padding: 2rem 0;
+  min-height: calc(100vh - 100px);
+}
+
+.watchlist-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 2rem;
+}
+
+/* Page Header */
+.watchlist-page-header {
+  text-align: center;
+  margin-bottom: 3rem;
+  position: relative;
+}
+
+.back-to-chat-btn {
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  background: linear-gradient(45deg, #272030, #C79A99);
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 25px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(39, 32, 48, 0.3);
+}
+
+.back-to-chat-btn:hover {
+  transform: translateY(-50%) translateY(-2px);
+  box-shadow: 0 4px 12px rgba(39, 32, 48, 0.4);
+  background: linear-gradient(45deg, #C79A99, #272030);
+}
+
+.watchlist-page-title {
+  font-size: 2.5rem;
+  color: #333;
+  margin: 0;
+  font-weight: 600;
+  background: linear-gradient(45deg, #272030, #C79A99);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.watchlist-count {
+  color: #6c757d;
+  font-size: 1.1rem;
+  margin-top: 0.5rem;
+  font-weight: 500;
+}
+
+/* Loading State */
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+  color: #6c757d;
+}
+
+.loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid #C79A99;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 1rem;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Empty State */
+.empty-watchlist {
+  text-align: center;
+  padding: 4rem 2rem;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e9ecef;
+}
+
+.empty-watchlist-icon {
+  font-size: 4rem;
+  margin-bottom: 1rem;
+}
+
+.empty-watchlist h3 {
+  font-size: 1.8rem;
+  color: #333;
+  margin: 0 0 1rem 0;
+  font-weight: 600;
+}
+
+.empty-watchlist p {
+  color: #6c757d;
+  font-size: 1.1rem;
+  margin: 0 0 2rem 0;
+  line-height: 1.5;
+}
+
+.explore-movies-btn {
+  background: linear-gradient(45deg, #272030, #C79A99);
+  color: white;
+  border: none;
+  padding: 1rem 2rem;
+  border-radius: 25px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(39, 32, 48, 0.3);
+}
+
+.explore-movies-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(39, 32, 48, 0.4);
+  background: linear-gradient(45deg, #C79A99, #272030);
+}
+
+/* Watchlist Grid */
+.watchlist-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2rem;
+  margin-bottom: 2rem;
+  max-width: 1200px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.watchlist-item {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e9ecef;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.watchlist-item:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+  cursor: pointer;
+}
+
+.watchlist-poster {
+  width: 100%;
+  height: 400px;
+  overflow: hidden;
+  position: relative;
+}
+
+.watchlist-poster-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.watchlist-item:hover .watchlist-poster-image {
+  transform: scale(1.05);
+}
+
+.remove-from-watchlist-btn {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: rgba(255, 255, 255, 0.95);
+  border: none;
+  width: 45px;
+  height: 45px;
+  border-radius: 50%;
+  font-size: 1.3rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  backdrop-filter: blur(10px);
+}
+
+.remove-from-watchlist-btn:hover {
+  background: white;
+  transform: scale(1.1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.watchlist-content {
+  padding: 2rem;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 200px;
+}
+
+.watchlist-movie-title {
+  font-size: 1.2rem;
+  color: #333;
+  margin: 0 0 0.75rem 0;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.watchlist-date {
+  font-size: 0.9rem;
+  color: #6c757d;
+  margin: 0;
+  font-weight: 500;
+}
+
+/* Notification Popup */
+.notification-popup {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 1000;
+  animation: slideInRight 0.3s ease-out;
+}
+
+.notification-content {
+  background: linear-gradient(45deg, #272030, #C79A99);
+  color: white;
+  padding: 1rem 1.5rem;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 600;
+  min-width: 200px;
+}
+
+.notification-icon {
+  font-size: 1.2rem;
+}
+
+.notification-text {
+  font-size: 1rem;
+}
+
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+  .watchlist-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.5rem;
+    max-width: 800px;
+  }
+  
+  .watchlist-poster {
+    height: 350px;
+  }
+}
+
+@media (max-width: 768px) {
+  .watchlist-container {
+    padding: 0 1rem;
+  }
+  
+  .watchlist-page-header {
+    margin-bottom: 2rem;
+  }
+  
+  .back-to-chat-btn {
+    position: static;
+    transform: none;
+    margin-bottom: 1rem;
+    padding: 0.6rem 1.2rem;
+    font-size: 0.9rem;
+  }
+  
+  .watchlist-page-title {
+    font-size: 2rem;
+  }
+  
+  .watchlist-grid {
+    max-width: 1000px;
+  }
+  
+  .remove-from-watchlist-btn {
+    width: 40px;
+    height: 40px;
+    font-size: 1.1rem;
+  }
+  
+  .watchlist-content {
+    padding: 1.5rem;
+    min-height: 180px;
+  }
+  
+  .watchlist-movie-title {
+    font-size: 1.1rem;
+  }
+  
+  .notification-popup {
+    top: 10px;
+    right: 10px;
+    left: 10px;
+  }
+  
+  .notification-content {
+    padding: 0.75rem 1rem;
+    min-width: auto;
+  }
+}
+
+@media (max-width: 480px) {
+  .watchlist-grid {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+    max-width: 400px;
+  }
+  
+  .watchlist-poster {
+    height: 300px;
+  }
+  
+  .watchlist-content {
+    padding: 1.2rem;
+    min-height: 160px;
+  }
+  
+  .empty-watchlist {
+    padding: 2rem 1rem;
+  }
+  
+  .empty-watchlist-icon {
+    font-size: 3rem;
+  }
+  
+  .empty-watchlist h3 {
+    font-size: 1.5rem;
+  }
+}

@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import WatchList from './WatchList'
 import './Dashboard.css'
 
 const Dashboard = ({ user, onLogout }) => {
@@ -8,7 +9,7 @@ const Dashboard = ({ user, onLogout }) => {
   const [error, setError] = useState('')
   const [selectedMovie, setSelectedMovie] = useState(null)
   const [watchlist, setWatchlist] = useState([])
-  const [showWatchlist, setShowWatchlist] = useState(false)
+  const [currentPage, setCurrentPage] = useState('chat') // 'chat' or 'watchlist'
   const [notification, setNotification] = useState(null)
   const [watchlistStatus, setWatchlistStatus] = useState({})
 
@@ -107,6 +108,14 @@ const Dashboard = ({ user, onLogout }) => {
     }, 3000)
   }
 
+  const navigateToWatchlist = () => {
+    setCurrentPage('watchlist')
+  }
+
+  const navigateToChat = () => {
+    setCurrentPage('chat')
+  }
+
   const handleInputChange = (e) => {
     setUserInput(e.target.value)
     setError('') // Clear error when user types
@@ -161,7 +170,7 @@ const Dashboard = ({ user, onLogout }) => {
           <div className="user-section">
             <button 
               className="watchlist-btn"
-              onClick={() => setShowWatchlist(!showWatchlist)}
+              onClick={navigateToWatchlist}
             >
               ❤️ Watch List ({watchlist.length})
             </button>
@@ -173,57 +182,16 @@ const Dashboard = ({ user, onLogout }) => {
         </div>
       </header>
       
-      <main className="dashboard-content">
-        {/* Watchlist Section */}
-        {showWatchlist && (
-          <div className="watchlist-section">
-            <div className="watchlist-header">
-              <h2 className="watchlist-title">❤️ Your Watch List</h2>
-              <button 
-                className="close-watchlist-btn"
-                onClick={() => setShowWatchlist(false)}
-              >
-                ✕
-              </button>
-            </div>
-            {watchlist.length === 0 ? (
-              <div className="empty-watchlist">
-                <p>Your watch list is empty. Add some movies to get started!</p>
-              </div>
-            ) : (
-              <div className="watchlist-grid">
-                {watchlist.map((item) => (
-                  <div key={item.id} className="watchlist-item">
-                    {item.movie_poster && (
-                      <div className="watchlist-poster">
-                        <img 
-                          src={item.movie_poster} 
-                          alt={`${item.movie_title} poster`}
-                          className="watchlist-poster-image"
-                        />
-                        <button 
-                          className="remove-from-watchlist-btn"
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            removeFromWatchlist(item.movie_id)
-                          }}
-                        >
-                          ❤️
-                        </button>
-                      </div>
-                    )}
-                    <div className="watchlist-content">
-                      <h4 className="watchlist-movie-title">{item.movie_title}</h4>
-                      <p className="watchlist-date">Added {new Date(item.created_at).toLocaleDateString()}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
-
-        <div className="main-input-section">
+      {/* Conditional Rendering */}
+      {currentPage === 'watchlist' ? (
+        <WatchList 
+          user={user} 
+          onBackToChat={navigateToChat}
+          onLogout={onLogout}
+        />
+      ) : (
+        <main className="dashboard-content">
+          <div className="main-input-section">
           <h2 className="input-heading">Tell me how you feel and what you would like to watch</h2>
           
           <form onSubmit={handleSubmit} className="input-form">
@@ -330,62 +298,63 @@ const Dashboard = ({ user, onLogout }) => {
             </div>
           )}
         </div>
-      </main>
 
-      {/* Movie Detail Modal */}
-      {selectedMovie && (
-        <div className="modal-overlay" onClick={closeModal}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            <button className="modal-close" onClick={closeModal}>×</button>
-            <div className="modal-movie-details">
-              <div className="modal-poster-section">
-                {selectedMovie.poster_url && (
-                  <img 
-                    src={selectedMovie.poster_url} 
-                    alt={`${selectedMovie.title} poster`}
-                    className="modal-poster"
-                  />
-                )}
-                {selectedMovie.match_percentage && (
-                  <div className="modal-match-circle">
-                    <div className="match-percentage-large">{selectedMovie.match_percentage}%</div>
-                    <div className="match-label">Match</div>
+        {/* Movie Detail Modal */}
+        {selectedMovie && (
+          <div className="modal-overlay" onClick={closeModal}>
+            <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+              <button className="modal-close" onClick={closeModal}>×</button>
+              <div className="modal-movie-details">
+                <div className="modal-poster-section">
+                  {selectedMovie.poster_url && (
+                    <img 
+                      src={selectedMovie.poster_url} 
+                      alt={`${selectedMovie.title} poster`}
+                      className="modal-poster"
+                    />
+                  )}
+                  {selectedMovie.match_percentage && (
+                    <div className="modal-match-circle">
+                      <div className="match-percentage-large">{selectedMovie.match_percentage}%</div>
+                      <div className="match-label">Match</div>
+                    </div>
+                  )}
+                </div>
+                <div className="modal-info-section">
+                  <h2 className="modal-title">{selectedMovie.title}</h2>
+                  <div className="modal-meta">
+                    <div className="modal-year">{selectedMovie.year}</div>
+                    <div className="modal-genre">{selectedMovie.genre}</div>
+                    <div className="modal-rating">⭐ {selectedMovie.tmdb_rating ? selectedMovie.tmdb_rating.toFixed(1) : selectedMovie.rating}</div>
                   </div>
-                )}
-              </div>
-              <div className="modal-info-section">
-                <h2 className="modal-title">{selectedMovie.title}</h2>
-                <div className="modal-meta">
-                  <div className="modal-year">{selectedMovie.year}</div>
-                  <div className="modal-genre">{selectedMovie.genre}</div>
-                  <div className="modal-rating">⭐ {selectedMovie.tmdb_rating ? selectedMovie.tmdb_rating.toFixed(1) : selectedMovie.rating}</div>
-                </div>
-                
-                <div className="modal-explanation">
-                  <h3>Why This Movie is Perfect for You</h3>
-                  <p>{selectedMovie.detailed_explanation || selectedMovie.reason}</p>
-                </div>
+                  
+                  <div className="modal-explanation">
+                    <h3>Why This Movie is Perfect for You</h3>
+                    <p>{selectedMovie.detailed_explanation || selectedMovie.reason}</p>
+                  </div>
 
-                {selectedMovie.overview && (
-                  <div className="modal-overview">
-                    <h3>Plot Summary</h3>
-                    <p>{selectedMovie.overview}</p>
-                  </div>
-                )}
+                  {selectedMovie.overview && (
+                    <div className="modal-overview">
+                      <h3>Plot Summary</h3>
+                      <p>{selectedMovie.overview}</p>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
 
-      {/* Notification Popup */}
-      {notification && (
-        <div className="notification-popup">
-          <div className="notification-content">
-            <span className="notification-icon">❤️</span>
-            <span className="notification-text">{notification}</span>
+        {/* Notification Popup */}
+        {notification && (
+          <div className="notification-popup">
+            <div className="notification-content">
+              <span className="notification-icon">❤️</span>
+              <span className="notification-text">{notification}</span>
+            </div>
           </div>
-        </div>
+        )}
+      </main>
       )}
     </div>
   )
