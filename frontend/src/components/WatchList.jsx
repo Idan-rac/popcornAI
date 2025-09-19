@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import './WatchList.css'
 
-const WatchList = ({ user, onBackToChat, onLogout }) => {
+const WatchList = ({ user, onBackToChat, onLogout, onWatchlistUpdate }) => {
   const [watchlist, setWatchlist] = useState([])
   const [loading, setLoading] = useState(true)
   const [notification, setNotification] = useState(null)
@@ -48,6 +48,10 @@ const WatchList = ({ user, onBackToChat, onLogout }) => {
       if (response.ok) {
         setWatchlist(prev => prev.filter(item => item.movie_id !== movieId))
         showNotification('Removed from Watch List')
+        // Notify parent component to update its watchlist state
+        if (onWatchlistUpdate) {
+          onWatchlistUpdate()
+        }
       } else {
         const errorData = await response.json()
         showNotification(errorData.error || 'Failed to remove from watchlist')

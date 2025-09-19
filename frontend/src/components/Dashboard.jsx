@@ -124,7 +124,7 @@ const Dashboard = ({ user, onLogout }) => {
     // Auto-expand textarea based on content
     const textarea = e.target
     textarea.style.height = 'auto'
-    textarea.style.height = Math.max(30, textarea.scrollHeight) + 'px'
+    textarea.style.height = Math.max(80, textarea.scrollHeight) + 'px'
   }
 
   const handleSubmit = async (e) => {
@@ -178,7 +178,7 @@ const Dashboard = ({ user, onLogout }) => {
     // Reset textarea height to default
     const textarea = document.querySelector('.main-textarea')
     if (textarea) {
-      textarea.style.height = '30px'
+      textarea.style.height = '80px'
     }
   }
 
@@ -213,6 +213,7 @@ const Dashboard = ({ user, onLogout }) => {
           user={user} 
           onBackToChat={navigateToChat}
           onLogout={onLogout}
+          onWatchlistUpdate={loadWatchlist}
         />
       ) : (
         <main className="dashboard-content">

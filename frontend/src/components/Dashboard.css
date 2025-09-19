@@ -137,8 +137,8 @@
 
 .main-textarea {
   width: 100%;
-  min-height: 30px;
-  height: 30px;
+  min-height: 80px;
+  height: 80px;
   padding: 1.5rem;
   border: 2px solid #e9ecef;
   border-radius: 15px;
