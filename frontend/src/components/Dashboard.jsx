@@ -160,12 +160,22 @@ const Dashboard = ({ user, onLogout }) => {
     setSelectedMovie(null)
   }
 
+  const resetToMainScreen = () => {
+    // Clear all state to return to fresh start
+    setUserInput('')
+    setRecommendations(null)
+    setError('')
+    setSelectedMovie(null)
+    setCurrentPage('chat')
+    setNotification(null)
+  }
+
   return (
     <div className="dashboard">
       <header className="dashboard-header">
         <div className="header-content">
           <div className="logo-section">
-            <h1 className="logo">PopcornAI</h1>
+            <h1 className="logo" onClick={resetToMainScreen}>PopcornAI</h1>
           </div>
           <div className="user-section">
             <button 

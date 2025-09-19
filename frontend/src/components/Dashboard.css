@@ -34,6 +34,7 @@
     0 4px 8px rgba(39, 32, 48, 0.3);
   filter: drop-shadow(0 0 6px rgba(199, 154, 153, 0.2));
   transition: all 0.3s ease;
+  cursor: pointer;
 }
 
 .logo-section .logo:hover {
