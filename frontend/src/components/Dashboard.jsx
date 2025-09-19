@@ -6,6 +6,7 @@ const Dashboard = ({ user, onLogout }) => {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [recommendations, setRecommendations] = useState(null)
   const [error, setError] = useState('')
+  const [selectedMovie, setSelectedMovie] = useState(null)
 
   const handleInputChange = (e) => {
     setUserInput(e.target.value)
@@ -41,6 +42,14 @@ const Dashboard = ({ user, onLogout }) => {
     } finally {
       setIsSubmitting(false)
     }
+  }
+
+  const handleMovieClick = (movie) => {
+    setSelectedMovie(movie)
+  }
+
+  const closeModal = () => {
+    setSelectedMovie(null)
   }
 
   return (
@@ -105,7 +114,7 @@ const Dashboard = ({ user, onLogout }) => {
               </h3>
               <div className="movies-grid">
                 {recommendations.movies.map((movie, index) => (
-                  <div key={index} className="movie-card">
+                  <div key={index} className="movie-card" onClick={() => handleMovieClick(movie)}>
                     {movie.poster_url && (
                       <div className="movie-poster">
                         <img 
@@ -116,6 +125,11 @@ const Dashboard = ({ user, onLogout }) => {
                             e.target.style.display = 'none';
                           }}
                         />
+                        {movie.match_percentage && (
+                          <div className="match-percentage">
+                            {movie.match_percentage}% Match
+                          </div>
+                        )}
                       </div>
                     )}
                     <div className="movie-content">
@@ -145,6 +159,52 @@ const Dashboard = ({ user, onLogout }) => {
           )}
         </div>
       </main>
+
+      {/* Movie Detail Modal */}
+      {selectedMovie && (
+        <div className="modal-overlay" onClick={closeModal}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <button className="modal-close" onClick={closeModal}>×</button>
+            <div className="modal-movie-details">
+              <div className="modal-poster-section">
+                {selectedMovie.poster_url && (
+                  <img 
+                    src={selectedMovie.poster_url} 
+                    alt={`${selectedMovie.title} poster`}
+                    className="modal-poster"
+                  />
+                )}
+                {selectedMovie.match_percentage && (
+                  <div className="modal-match-circle">
+                    <div className="match-percentage-large">{selectedMovie.match_percentage}%</div>
+                    <div className="match-label">Match</div>
+                  </div>
+                )}
+              </div>
+              <div className="modal-info-section">
+                <h2 className="modal-title">{selectedMovie.title}</h2>
+                <div className="modal-meta">
+                  <div className="modal-year">{selectedMovie.year}</div>
+                  <div className="modal-genre">{selectedMovie.genre}</div>
+                  <div className="modal-rating">⭐ {selectedMovie.tmdb_rating ? selectedMovie.tmdb_rating.toFixed(1) : selectedMovie.rating}</div>
+                </div>
+                
+                <div className="modal-explanation">
+                  <h3>Why This Movie is Perfect for You</h3>
+                  <p>{selectedMovie.detailed_explanation || selectedMovie.reason}</p>
+                </div>
+
+                {selectedMovie.overview && (
+                  <div className="modal-overview">
+                    <h3>Plot Summary</h3>
+                    <p>{selectedMovie.overview}</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

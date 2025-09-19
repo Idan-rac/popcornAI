@@ -250,6 +250,7 @@
 .movie-card:hover {
   transform: translateY(-3px);
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+  cursor: pointer;
 }
 
 .movie-poster {
@@ -268,6 +269,20 @@
 
 .movie-card:hover .poster-image {
   transform: scale(1.05);
+}
+
+.match-percentage {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: linear-gradient(45deg, #272030, #C79A99);
+  color: white;
+  padding: 0.5rem 0.8rem;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  z-index: 2;
 }
 
 .movie-content {
@@ -342,6 +357,179 @@
 .new-search-btn:hover {
   transform: translateY(-2px);
   box-shadow: 0 4px 15px rgba(39, 32, 48, 0.3);
+}
+
+/* Modal Styles */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 2rem;
+}
+
+.modal-content {
+  background: white;
+  border-radius: 20px;
+  max-width: 900px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  position: relative;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+}
+
+.modal-close {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: rgba(0, 0, 0, 0.5);
+  color: white;
+  border: none;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  font-size: 1.5rem;
+  cursor: pointer;
+  z-index: 1001;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.3s ease;
+}
+
+.modal-close:hover {
+  background: rgba(0, 0, 0, 0.7);
+}
+
+.modal-movie-details {
+  display: flex;
+  gap: 2rem;
+  padding: 2rem;
+}
+
+.modal-poster-section {
+  flex: 0 0 300px;
+  position: relative;
+}
+
+.modal-poster {
+  width: 100%;
+  height: 450px;
+  object-fit: cover;
+  border-radius: 15px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+}
+
+.modal-match-circle {
+  position: absolute;
+  bottom: -30px;
+  right: -30px;
+  width: 120px;
+  height: 120px;
+  background: linear-gradient(45deg, #272030, #C79A99);
+  border-radius: 50%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+  border: 4px solid white;
+}
+
+.match-percentage-large {
+  font-size: 1.8rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.match-label {
+  font-size: 0.9rem;
+  font-weight: 500;
+  margin-top: 0.2rem;
+}
+
+.modal-info-section {
+  flex: 1;
+  padding-top: 1rem;
+}
+
+.modal-title {
+  font-size: 2.5rem;
+  color: #333;
+  margin: 0 0 1rem 0;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.modal-meta {
+  display: flex;
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+}
+
+.modal-year {
+  background: linear-gradient(45deg, #272030, #C79A99);
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  font-weight: 600;
+}
+
+.modal-genre {
+  color: #6c757d;
+  font-weight: 500;
+  font-size: 1.1rem;
+}
+
+.modal-rating {
+  color: #272030;
+  font-weight: 600;
+  font-size: 1.1rem;
+}
+
+.modal-explanation {
+  margin-bottom: 2rem;
+}
+
+.modal-explanation h3 {
+  color: #333;
+  font-size: 1.5rem;
+  margin: 0 0 1rem 0;
+  font-weight: 600;
+}
+
+.modal-explanation p {
+  color: #555;
+  line-height: 1.6;
+  font-size: 1.1rem;
+  margin: 0;
+}
+
+.modal-overview {
+  margin-bottom: 1rem;
+}
+
+.modal-overview h3 {
+  color: #333;
+  font-size: 1.3rem;
+  margin: 0 0 1rem 0;
+  font-weight: 600;
+}
+
+.modal-overview p {
+  color: #666;
+  line-height: 1.6;
+  font-size: 1rem;
+  margin: 0;
 }
 
 /* Responsive Design */
@@ -462,6 +650,43 @@
   
   .recommendations-heading {
     font-size: 1.3rem;
+  }
+  
+  .modal-movie-details {
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+  
+  .modal-poster-section {
+    flex: none;
+    text-align: center;
+  }
+  
+  .modal-poster {
+    height: 350px;
+    max-width: 250px;
+    margin: 0 auto;
+  }
+  
+  .modal-match-circle {
+    bottom: -20px;
+    right: 50%;
+    transform: translateX(50%);
+    width: 100px;
+    height: 100px;
+  }
+  
+  .match-percentage-large {
+    font-size: 1.5rem;
+  }
+  
+  .modal-title {
+    font-size: 2rem;
+    text-align: center;
+  }
+  
+  .modal-meta {
+    justify-content: center;
   }
 }
 
