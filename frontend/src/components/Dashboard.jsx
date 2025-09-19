@@ -106,13 +106,29 @@ const Dashboard = ({ user, onLogout }) => {
               <div className="movies-grid">
                 {recommendations.movies.map((movie, index) => (
                   <div key={index} className="movie-card">
-                    <div className="movie-header">
-                      <h4 className="movie-title">{movie.title}</h4>
-                      <div className="movie-year">{movie.year}</div>
+                    {movie.poster_url && (
+                      <div className="movie-poster">
+                        <img 
+                          src={movie.poster_url} 
+                          alt={`${movie.title} poster`}
+                          className="poster-image"
+                          onError={(e) => {
+                            e.target.style.display = 'none';
+                          }}
+                        />
+                      </div>
+                    )}
+                    <div className="movie-content">
+                      <div className="movie-header">
+                        <h4 className="movie-title">{movie.title}</h4>
+                        <div className="movie-year">{movie.year}</div>
+                      </div>
+                      <div className="movie-genre">{movie.genre}</div>
+                      <div className="movie-rating">
+                        ⭐ {movie.tmdb_rating ? movie.tmdb_rating.toFixed(1) : movie.rating}
+                      </div>
+                      <p className="movie-reason">{movie.reason}</p>
                     </div>
-                    <div className="movie-genre">{movie.genre}</div>
-                    <div className="movie-rating">⭐ {movie.rating}</div>
-                    <p className="movie-reason">{movie.reason}</p>
                   </div>
                 ))}
               </div>
