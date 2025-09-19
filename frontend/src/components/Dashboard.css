@@ -228,9 +228,12 @@
 
 .movies-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 1.5rem;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2rem;
   margin-bottom: 2rem;
+  max-width: 1200px;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .movie-card {
@@ -251,7 +254,7 @@
 
 .movie-poster {
   width: 100%;
-  height: 300px;
+  height: 400px;
   overflow: hidden;
   position: relative;
 }
@@ -268,10 +271,11 @@
 }
 
 .movie-content {
-  padding: 1.5rem;
+  padding: 2rem;
   flex: 1;
   display: flex;
   flex-direction: column;
+  min-height: 200px;
 }
 
 .movie-header {
@@ -353,6 +357,27 @@
   .main-input-section {
     max-width: 700px;
   }
+  
+  .movies-grid {
+    max-width: 1000px;
+  }
+}
+
+@media (max-width: 1024px) {
+  .movies-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.5rem;
+    max-width: 800px;
+  }
+  
+  .movie-poster {
+    height: 350px;
+  }
+  
+  .movie-content {
+    padding: 1.5rem;
+    min-height: 180px;
+  }
 }
 
 @media (max-width: 768px) {
@@ -389,19 +414,6 @@
     min-width: 200px;
   }
   
-  .movies-grid {
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 1rem;
-  }
-  
-  .movie-poster {
-    height: 250px;
-  }
-  
-  .movie-content {
-    padding: 1rem;
-  }
-  
   .recommendations-heading {
     font-size: 1.5rem;
   }
@@ -431,15 +443,17 @@
   
   .movies-grid {
     grid-template-columns: 1fr;
-    gap: 1rem;
+    gap: 1.5rem;
+    max-width: 400px;
   }
   
   .movie-poster {
-    height: 200px;
+    height: 300px;
   }
   
   .movie-content {
-    padding: 0.8rem;
+    padding: 1.2rem;
+    min-height: 160px;
   }
   
   .movie-title {
