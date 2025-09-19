@@ -119,6 +119,11 @@ const Dashboard = ({ user, onLogout }) => {
   const handleInputChange = (e) => {
     setUserInput(e.target.value)
     setError('') // Clear error when user types
+    
+    // Auto-expand textarea based on content
+    const textarea = e.target
+    textarea.style.height = 'auto'
+    textarea.style.height = Math.max(200, textarea.scrollHeight) + 'px'
   }
 
   const handleSubmit = async (e) => {
@@ -168,6 +173,12 @@ const Dashboard = ({ user, onLogout }) => {
     setSelectedMovie(null)
     setCurrentPage('chat')
     setNotification(null)
+    
+    // Reset textarea height to default
+    const textarea = document.querySelector('.main-textarea')
+    if (textarea) {
+      textarea.style.height = '200px'
+    }
   }
 
   return (
@@ -211,7 +222,6 @@ const Dashboard = ({ user, onLogout }) => {
                 onChange={handleInputChange}
                 placeholder="I'm feeling adventurous and want to watch something with action and mystery..."
                 className="main-textarea"
-                rows={8}
                 disabled={isSubmitting}
               />
             </div>
