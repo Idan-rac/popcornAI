@@ -13,11 +13,26 @@ const Dashboard = ({ user, onLogout }) => {
   const [currentPage, setCurrentPage] = useState('chat') // 'chat' or 'watchlist'
   const [notification, setNotification] = useState(null)
   const [watchlistStatus, setWatchlistStatus] = useState({})
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
 
   // Load watchlist on component mount
   useEffect(() => {
     loadWatchlist()
   }, [])
+
+  // Close mobile menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (isMobileMenuOpen && !event.target.closest('.mobile-menu-container')) {
+        setIsMobileMenuOpen(false)
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [isMobileMenuOpen])
 
   const loadWatchlist = async () => {
     try {
@@ -174,12 +189,22 @@ const Dashboard = ({ user, onLogout }) => {
     setSelectedMovie(null)
     setCurrentPage('chat')
     setNotification(null)
+    setIsMobileMenuOpen(false)
     
     // Reset textarea height to default
     const textarea = document.querySelector('.main-textarea')
     if (textarea) {
       textarea.style.height = '80px'
     }
+  }
+
+  const toggleMobileMenu = () => {
+    setIsMobileMenuOpen(!isMobileMenuOpen)
+  }
+
+  const handleLogout = () => {
+    setIsMobileMenuOpen(false)
+    onLogout()
   }
 
   return (
@@ -204,6 +229,39 @@ const Dashboard = ({ user, onLogout }) => {
               Logout
             </button>
           </div>
+        </div>
+        {/* Mobile-only minimal watchlist button */}
+        <div className="mobile-watchlist-container">
+          <button 
+            className="mobile-watchlist-btn"
+            onClick={navigateToWatchlist}
+            title={`Watch List (${watchlist.length})`}
+          >
+            ❤️
+          </button>
+        </div>
+        
+        {/* Mobile-only three-dots menu button */}
+        <div className="mobile-menu-container">
+          <button 
+            className="mobile-menu-btn"
+            onClick={toggleMobileMenu}
+            title="Menu"
+          >
+            ⋯
+          </button>
+          
+          {/* Mobile menu dropdown */}
+          {isMobileMenuOpen && (
+            <div className="mobile-menu-dropdown">
+              <button 
+                className="mobile-logout-btn"
+                onClick={handleLogout}
+              >
+                Logout
+              </button>
+            </div>
+          )}
         </div>
       </header>
       
