@@ -4,9 +4,12 @@ import './Dashboard.css'
 const Dashboard = ({ user, onLogout }) => {
   const [userInput, setUserInput] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [recommendations, setRecommendations] = useState(null)
+  const [error, setError] = useState('')
 
   const handleInputChange = (e) => {
     setUserInput(e.target.value)
+    setError('') // Clear error when user types
   }
 
   const handleSubmit = async (e) => {
@@ -14,15 +17,30 @@ const Dashboard = ({ user, onLogout }) => {
     if (!userInput.trim()) return
 
     setIsSubmitting(true)
+    setError('')
+    setRecommendations(null)
     
-    // TODO: Implement AI processing logic here
-    console.log('User input:', userInput)
-    
-    // Simulate processing time
-    setTimeout(() => {
+    try {
+      const response = await fetch('http://localhost:5000/api/recommendations', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ userInput }),
+      })
+
+      const data = await response.json()
+
+      if (response.ok) {
+        setRecommendations(data)
+      } else {
+        setError(data.error || 'Failed to get recommendations. Please try again.')
+      }
+    } catch (err) {
+      setError('Network error. Please check if the backend is running.')
+    } finally {
       setIsSubmitting(false)
-      // TODO: Handle the response and show results
-    }, 2000)
+    }
   }
 
   return (
@@ -73,6 +91,42 @@ const Dashboard = ({ user, onLogout }) => {
               )}
             </button>
           </form>
+
+          {error && (
+            <div className="error-message">
+              {error}
+            </div>
+          )}
+
+          {recommendations && (
+            <div className="recommendations-section">
+              <h3 className="recommendations-heading">
+                🎬 Movie Recommendations for: "{recommendations.userInput}"
+              </h3>
+              <div className="movies-grid">
+                {recommendations.movies.map((movie, index) => (
+                  <div key={index} className="movie-card">
+                    <div className="movie-header">
+                      <h4 className="movie-title">{movie.title}</h4>
+                      <div className="movie-year">{movie.year}</div>
+                    </div>
+                    <div className="movie-genre">{movie.genre}</div>
+                    <div className="movie-rating">⭐ {movie.rating}</div>
+                    <p className="movie-reason">{movie.reason}</p>
+                  </div>
+                ))}
+              </div>
+              <button 
+                onClick={() => {
+                  setRecommendations(null)
+                  setUserInput('')
+                }}
+                className="new-search-btn"
+              >
+                Search Again
+              </button>
+            </div>
+          )}
         </div>
       </main>
     </div>
