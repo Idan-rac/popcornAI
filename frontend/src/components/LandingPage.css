@@ -1,7 +1,7 @@
 /* Landing Page Styles */
 .landing-page {
   min-height: 100vh;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #272030 0%, #C79A99 50%, #3B0A0A 100%);
   display: flex;
   flex-direction: column;
 }
@@ -27,14 +27,37 @@
 }
 
 .logo {
-  font-size: 3rem;
+  font-size: 4.5rem;
   font-weight: 700;
   margin: 0 0 0.5rem 0;
-  background: linear-gradient(45deg, #fff, #f0f0f0);
+  background: linear-gradient(45deg, #fff, #E3EBF2, #fff);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  text-shadow: 
+    0 0 5px rgba(255, 255, 255, 0.4),
+    0 0 10px rgba(255, 255, 255, 0.3),
+    0 2px 4px rgba(0, 0, 0, 0.4),
+    0 4px 8px rgba(0, 0, 0, 0.3);
+  filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.3));
+  animation: logoGlow 3s ease-in-out infinite alternate;
+}
+
+@keyframes logoGlow {
+  0% {
+    text-shadow: 
+      0 0 5px rgba(255, 255, 255, 0.4),
+      0 0 10px rgba(255, 255, 255, 0.3),
+      0 2px 4px rgba(0, 0, 0, 0.4),
+      0 4px 8px rgba(0, 0, 0, 0.3);
+  }
+  100% {
+    text-shadow: 
+      0 0 8px rgba(255, 255, 255, 0.6),
+      0 0 15px rgba(255, 255, 255, 0.4),
+      0 2px 4px rgba(0, 0, 0, 0.4),
+      0 4px 8px rgba(0, 0, 0, 0.3);
+  }
 }
 
 .tagline {
@@ -90,12 +113,12 @@
 }
 
 .tab-button:hover {
-  color: #667eea;
-  background: rgba(102, 126, 234, 0.05);
+  color: #272030;
+  background: rgba(39, 32, 48, 0.05);
 }
 
 .tab-button.active {
-  color: #667eea;
+  color: #272030;
   background: white;
 }
 
@@ -106,7 +129,7 @@
   left: 0;
   right: 0;
   height: 3px;
-  background: linear-gradient(45deg, #667eea, #764ba2);
+  background: linear-gradient(45deg, #272030, #C79A99);
 }
 
 /* Form Content */
@@ -224,7 +247,7 @@
   }
   
   .logo {
-    font-size: 2.5rem;
+    font-size: 3.5rem;
   }
   
   .tagline {
@@ -265,7 +288,7 @@
   }
   
   .logo {
-    font-size: 2rem;
+    font-size: 3rem;
   }
   
   .tagline {

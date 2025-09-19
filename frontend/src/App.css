@@ -38,7 +38,7 @@ body {
 /* Focus styles for accessibility */
 button:focus-visible,
 input:focus-visible {
-  outline: 2px solid #667eea;
+  outline: 2px solid #272030;
   outline-offset: 2px;
 }
 

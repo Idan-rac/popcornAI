@@ -6,7 +6,7 @@ const Dashboard = ({ user, onLogout }) => {
       <header className="dashboard-header">
         <div className="header-content">
           <div className="logo-section">
-            <h1 className="logo">MovieApp</h1>
+            <h1 className="logo">PopcornAI</h1>
           </div>
           <div className="user-section">
             <span className="welcome-text">Welcome, {user.username}!</span>

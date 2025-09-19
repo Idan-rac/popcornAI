@@ -16,7 +16,7 @@ const LandingPage = ({ onLogin }) => {
         {/* Header Section */}
         <header className="landing-header">
           <div className="logo-section">
-            <h1 className="logo">MovieApp</h1>
+            <h1 className="logo">PopcornAI</h1>
             <p className="tagline">Discover, Rate, and Share Your Favorite Movies</p>
           </div>
         </header>
@@ -52,7 +52,7 @@ const LandingPage = ({ onLogin }) => {
 
           {/* Features Section */}
           <div className="features-section">
-            <h2>Why Choose MovieApp?</h2>
+            <h2>Why Choose PopcornAI?</h2>
             <div className="features-grid">
               <div className="feature-item">
                 <div className="feature-icon">🎬</div>
@@ -75,7 +75,7 @@ const LandingPage = ({ onLogin }) => {
 
         {/* Footer */}
         <footer className="landing-footer">
-          <p>&copy; 2024 MovieApp. All rights reserved.</p>
+          <p>&copy; 2024 PopcornAI. All rights reserved.</p>
         </footer>
       </div>
     </div>
