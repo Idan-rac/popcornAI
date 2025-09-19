@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import LoginForm from './LoginForm'
 import RegisterForm from './RegisterForm'
+import PopcornLogo from './PopcornLogo'
 import './LandingPage.css'
 
 const LandingPage = ({ onLogin }) => {
@@ -16,7 +17,10 @@ const LandingPage = ({ onLogin }) => {
         {/* Header Section */}
         <header className="landing-header">
           <div className="logo-section">
-            <h1 className="logo">PopcornAI</h1>
+            <div className="logo">
+              <PopcornLogo size={80} />
+              <span className="logo-text">PopcornAI</span>
+            </div>
             <p className="tagline">Discover, Rate, and Share Your Favorite Movies</p>
           </div>
         </header>

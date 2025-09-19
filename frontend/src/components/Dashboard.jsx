@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import WatchList from './WatchList'
+import PopcornLogo from './PopcornLogo'
 import './Dashboard.css'
 
 const Dashboard = ({ user, onLogout }) => {
@@ -186,7 +187,10 @@ const Dashboard = ({ user, onLogout }) => {
       <header className="dashboard-header">
         <div className="header-content">
           <div className="logo-section">
-            <h1 className="logo" onClick={resetToMainScreen}>PopcornAI</h1>
+            <div className="logo" onClick={resetToMainScreen}>
+              <PopcornLogo size={50} />
+              <span className="logo-text">PopcornAI</span>
+            </div>
           </div>
           <div className="user-section">
             <button 
@@ -213,6 +217,9 @@ const Dashboard = ({ user, onLogout }) => {
       ) : (
         <main className="dashboard-content">
           <div className="main-input-section">
+          <div className="input-logo">
+            <PopcornLogo size={120} />
+          </div>
           <h2 className="input-heading">Tell me how you feel and what you would like to watch</h2>
           
           <form onSubmit={handleSubmit} className="input-form">

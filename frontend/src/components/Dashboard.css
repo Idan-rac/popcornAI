@@ -20,6 +20,14 @@
 
 .logo-section .logo {
   margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.logo-section .logo-text {
   color: #272030;
   font-size: 2.5rem;
   font-weight: 700;
@@ -33,18 +41,19 @@
     0 2px 4px rgba(39, 32, 48, 0.4),
     0 4px 8px rgba(39, 32, 48, 0.3);
   filter: drop-shadow(0 0 6px rgba(199, 154, 153, 0.2));
-  transition: all 0.3s ease;
-  cursor: pointer;
 }
 
 .logo-section .logo:hover {
+  transform: scale(1.05);
+}
+
+.logo-section .logo:hover .logo-text {
   text-shadow: 
     0 0 6px rgba(199, 154, 153, 0.6),
     0 0 12px rgba(199, 154, 153, 0.4),
     0 2px 4px rgba(39, 32, 48, 0.4),
     0 4px 8px rgba(39, 32, 48, 0.3);
   filter: drop-shadow(0 0 8px rgba(199, 154, 153, 0.3));
-  transform: scale(1.05);
 }
 
 .user-section {
@@ -90,6 +99,21 @@
   width: 100%;
   max-width: 800px;
   text-align: center;
+}
+
+.input-logo {
+  font-size: 4rem;
+  margin-bottom: 1rem;
+  animation: logoBounce 2s ease-in-out infinite;
+}
+
+@keyframes logoBounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
 }
 
 .input-heading {
