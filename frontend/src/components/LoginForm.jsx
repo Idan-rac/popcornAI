@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import PopcornLogo from './PopcornLogo'
 import './AuthForm.css'
 
 const LoginForm = ({ onLogin }) => {
@@ -48,6 +49,9 @@ const LoginForm = ({ onLogin }) => {
   return (
     <div className="auth-form-container">
       <div className="form-header">
+        <div className="logo-container">
+          <PopcornLogo size={100} />
+        </div>
         <h2>Welcome Back</h2>
         <p>Sign in to your account to continue</p>
       </div>

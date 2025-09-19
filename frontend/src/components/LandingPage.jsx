@@ -16,13 +16,6 @@ const LandingPage = ({ onLogin }) => {
       <div className="landing-container">
         {/* Header Section */}
         <header className="landing-header">
-          <div className="logo-section">
-            <div className="logo">
-              <PopcornLogo size={80} />
-              <span className="logo-text">PopcornAI</span>
-            </div>
-            <p className="tagline">Discover, Rate, and Share Your Favorite Movies</p>
-          </div>
         </header>
 
         {/* Main Content */}
@@ -61,17 +54,12 @@ const LandingPage = ({ onLogin }) => {
               <div className="feature-item">
                 <div className="feature-icon">🎬</div>
                 <h3>Discover Movies</h3>
-                <p>Find your next favorite film from our extensive database</p>
+                <p>Let PopcornAI help you choose the movie especially for you</p>
               </div>
               <div className="feature-item">
-                <div className="feature-icon">⭐</div>
-                <h3>Rate & Review</h3>
-                <p>Share your thoughts and rate movies you've watched</p>
-              </div>
-              <div className="feature-item">
-                <div className="feature-icon">👥</div>
-                <h3>Connect</h3>
-                <p>Follow friends and see what they're watching</p>
+                <div className="feature-icon">📧</div>
+                <h3>Contact</h3>
+                <p>Having an issue with the website? Contact us:<br/>popcornAI21@gmail.com</p>
               </div>
             </div>
           </div>
