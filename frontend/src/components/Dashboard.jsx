@@ -142,6 +142,15 @@ const Dashboard = ({ user, onLogout }) => {
     textarea.style.height = Math.max(80, textarea.scrollHeight) + 'px'
   }
 
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault()
+      if (userInput.trim() && !isSubmitting) {
+        handleSubmit(e)
+      }
+    }
+  }
+
   const handleSubmit = async (e) => {
     e.preventDefault()
     if (!userInput.trim()) return
@@ -286,6 +295,7 @@ const Dashboard = ({ user, onLogout }) => {
               <textarea
                 value={userInput}
                 onChange={handleInputChange}
+                onKeyDown={handleKeyDown}
                 placeholder="I'm feeling adventurous and want to watch something with action and mystery..."
                 className="main-textarea"
                 disabled={isSubmitting}

@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   # PostgreSQL Database
   db:
@@ -57,9 +55,7 @@ services:
       - backend
     networks:
       - movie_network
-    volumes:
-      - ./frontend:/app
-      - /app/node_modules
+    # volumes removed for production/preview mode; allows serving built files from image
 
 volumes:
   postgres_data:
