@@ -2,7 +2,6 @@ services:
   # PostgreSQL Database
   db:
     image: postgres:15
-    container_name: movie_db
     environment:
       POSTGRES_DB: movie_db
       POSTGRES_USER: postgres
@@ -23,7 +22,7 @@ services:
   # Backend API
   backend:
     build: ./backend
-    container_name: movie_backend
+    image: idanrachmany/movie2-backend:latest
     environment:
       - NODE_ENV=development
       - DB_HOST=db
@@ -48,7 +47,7 @@ services:
   # Frontend React App
   frontend:
     build: ./frontend
-    container_name: movie_frontend
+    image: idanrachmany/movie2-frontend:latest
     ports:
       - "3000:3000"
     depends_on:
