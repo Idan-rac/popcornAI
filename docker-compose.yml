@@ -54,7 +54,7 @@ services:
       - backend
     networks:
       - movie_network
-    # volumes removed for production/preview mode; allows serving built files from image
+    # volumes removed for production/preview mode; allows serving built files from image dsd
 
 volumes:
   postgres_data:
