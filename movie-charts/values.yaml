@@ -1,0 +1,127 @@
+replicaCount:
+  frontend: 1
+  backend: 1
+
+image:
+  frontend:
+    repository: idanrachmany/movie2-frontend
+    tag: "latest"
+    pullPolicy: IfNotPresent
+  backend:
+    repository: idanrachmany/movie2-backend
+    tag: "latest"
+    pullPolicy: IfNotPresent
+
+service:
+  frontend:
+    type: NodePort
+    port: 80
+    targetPort: 3000
+  backend:
+    type: NodePort
+    port: 5000
+    targetPort: 5000
+
+resources:
+  frontend:
+    limits:
+      cpu: 500m
+      memory: 512Mi
+    requests:
+      cpu: 100m
+      memory: 128Mi
+  backend:
+    limits:
+      cpu: 500m
+      memory: 512Mi
+    requests:
+      cpu: 100m
+      memory: 128Mi
+
+livenessProbe:
+  frontend:
+    enabled: true
+    path: /api/health
+    port: 3000
+    initialDelaySeconds: 15
+    periodSeconds: 10
+  backend:
+    enabled: true
+    path: /api/health
+    port: 5000
+    initialDelaySeconds: 15
+    periodSeconds: 10
+
+readinessProbe:
+  frontend:
+    enabled: true
+    path: /api/health
+    port: 3000
+    initialDelaySeconds: 5
+    periodSeconds: 5
+  backend:
+    enabled: true
+    path: /api/health
+    port: 5000
+    initialDelaySeconds: 5
+    periodSeconds: 5
+
+env:
+  frontend:
+    BACKEND_URL: "http://{{ .Release.Name }}-backend.{{ .Release.Namespace }}.svc.cluster.local:{{ .Values.service.backend.port }}"
+  backend:
+    DB_HOST: "{{ .Release.Name }}-postgres"
+    DB_PORT: "5432"
+    DB_NAME: "movie_db"
+    DB_USER: "postgres"
+    DB_PASSWORD: "postgres"
+    JWT_EXPIRES_IN: "24h"
+    NODE_ENV: "production"
+    PORT: "5000"
+
+imagePullSecrets: []
+
+secrets:
+  backend:
+    OPENAI_API_KEY:
+      secretName: movie-app-secrets
+      key: OPENAI_API_KEY
+    JWT_SECRET:
+      secretName: movie-app-secrets
+      key: JWT_SECRET
+
+nodeSelector: {}
+tolerations: []
+affinity: {}
+
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  create: true
+  automount: true
+  annotations: {}
+  name: ""
+
+autoscaling:
+  enabled: true
+  minReplicas: 1
+  maxReplicas: 100
+  targetCPUUtilizationPercentage: 80
+
+ingress:
+  enabled: true
+  className: ""
+  annotations: {}
+  hosts:
+    - host: movie-app.local
+      paths:
+        - path: /
+          pathType: ImplementationSpecific
+  tls: []
+
+httpRoute:
+  enabled: true
+  parentRefs: []
+  hostnames: []
+  rules: []
