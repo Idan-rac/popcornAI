@@ -1,0 +1,121 @@
+# Production values for movie application
+replicaCount:
+  frontend: 1
+  backend: 1
+
+image:
+  frontend:
+    repository: idanrachmany/movie2-frontend
+    tag: "latest"
+    pullPolicy: IfNotPresent
+  backend:
+    repository: idanrachmany/movie2-backend
+    tag: "latest"
+    pullPolicy: IfNotPresent
+
+service:
+  frontend:
+    type: ClusterIP
+    port: 80
+    targetPort: 3000
+  backend:
+    type: ClusterIP
+    port: 8080
+    targetPort: 8080
+
+resources:
+  frontend:
+    limits:
+      cpu: 500m
+      memory: 512Mi
+    requests:
+      cpu: 100m
+      memory: 128Mi
+  backend:
+    limits:
+      cpu: 500m
+      memory: 512Mi
+    requests:
+      cpu: 100m
+      memory: 128Mi
+
+# Disable health checks for now
+livenessProbe:
+  frontend:
+    enabled: false
+  backend:
+    enabled: false
+
+readinessProbe:
+  frontend:
+    enabled: false
+  backend:
+    enabled: false
+
+# Environment variables from your .env file
+env:
+  frontend:
+    BACKEND_URL: "http://movie-app-backend.movie-app.svc.cluster.local:8080"
+  backend:
+    # Database Configuration
+    DB_HOST: "movie-app-postgres"
+    DB_PORT: "5432"
+    DB_NAME: "movie_db"
+    DB_USER: "postgres"
+    DB_PASSWORD: "postgres"
+    DATABASE_URL: "postgresql://postgres:postgres@movie-app-postgres:5432/movie_db"
+    
+    # JWT Configuration
+    JWT_EXPIRES_IN: "24h"
+    
+    # Server Configuration
+    PORT: "8080"
+    NODE_ENV: "production"
+    
+    # API Keys - These will be loaded from Kubernetes secrets
+    OPENAI_API_KEY: ""  # Will be loaded from secret
+    TMDB_API_KEY: ""    # Will be loaded from secret
+    JWT_SECRET: ""      # Will be loaded from secret
+
+# Reference to Kubernetes secrets
+envFrom:
+  backend:
+    - secretRef:
+        name: movie-app-secrets
+
+imagePullSecrets: []
+nodeSelector: {}
+tolerations: []
+affinity: {}
+
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  create: true
+  automount: true
+  annotations: {}
+  name: ""
+
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 100
+  targetCPUUtilizationPercentage: 80
+
+ingress:
+  enabled: false
+  className: ""
+  annotations: {}
+  hosts:
+    - host: chart-example.local
+      paths:
+        - path: /
+          pathType: ImplementationSpecific
+  tls: []
+
+httpRoute:
+  enabled: false
+  parentRefs: []
+  hostnames: []
+  rules: []
