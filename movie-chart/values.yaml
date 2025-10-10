@@ -1,6 +1,7 @@
 # --- values.yaml ---
 global:
   dbServiceName: "movie-db-service" 
+  app: movie2
 
 # ----------------------------------------
 # 1. db settings
@@ -16,6 +17,7 @@ database:
 # 2. backend settings
 backend:
   image: idanrachmany/movie2-backend:latest
+  name: backend
   replicas: 2
   port: 5000
   env:
@@ -28,6 +30,7 @@ backend:
 # 3. frontend settings
 frontend:
   image: idanrachmany/movie2-frontend:latest
+  name: frontend
   replicas: 3
   port: 80
   apipath: "/api" # נתיב ה-API שאליו יפנה ה-frontend
