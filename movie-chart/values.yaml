@@ -11,7 +11,7 @@ database:
   volumeSize: "5Gi"   # גודל אחסון קבוע (PVC)
   port: 5432
   user: "postgres" # POSTGRES_USER
-  name: "movie_db" # POSTGRES_DB
+  name: "movie-db" # POSTGRES_DB
 
 # ----------------------------------------
 # 2. backend settings
@@ -23,7 +23,7 @@ backend:
   env:
     DB_PORT: 5432
     NODE_ENV: development
-    DB_HOST: db
+    DB_HOST: movie-db-service
     JWT_EXPIRES_IN: "24h"
 
 # ----------------------------------------
@@ -32,12 +32,14 @@ frontend:
   image: idanrachmany/movie2-frontend:latest
   name: frontend
   replicas: 3
-  port: 80
+  port: 3000
   apipath: "/api" # נתיב ה-API שאליו יפנה ה-frontend
   
 # ----------------------------------------
 # 4. Ingress settings
 ingress:
   enabled: true
-  host: "movie-project.local" # הדומיין שאיתו תחשוף את האפליקציה (לדוגמה)
-  className: "nginx"
+  host: "" # Empty host allows IP-based access
+  className: "traefik"  # Changed to traefik to match your cluster
+  annotations:
+    traefik.ingress.kubernetes.io/router.entrypoints: web

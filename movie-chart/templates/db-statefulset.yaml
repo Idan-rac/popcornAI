@@ -1,0 +1,85 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ .Release.Name }}-{{ .Values.database.name | default "db" }}
+  labels:
+    app: {{ .Values.global.app }}
+    component: database
+spec:
+  serviceName: {{ .Values.global.dbServiceName }}
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ .Values.global.app }}
+      component: database
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.global.app }}
+        component: database
+    spec:
+      containers:
+        - name: {{ .Values.database.name | default "db" }}
+          image: "{{ .Values.database.image }}"
+          ports:
+            - name: postgres
+              containerPort: {{ .Values.database.port }}
+          env:
+            - name: POSTGRES_DB
+              value: "{{ .Values.database.name }}"
+            - name: POSTGRES_USER
+              value: "{{ .Values.database.user }}"
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Release.Name }}-secrets
+                  key: DB_PASSWORD
+          volumeMounts:
+            - name: postgres-storage
+              mountPath: /var/lib/postgresql/data
+            - name: db-init-script
+              mountPath: /docker-entrypoint-initdb.d
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "250m"
+            limits:
+              memory: "1Gi"
+              cpu: "500m"
+          livenessProbe:
+            exec:
+              command:
+                - /bin/sh
+                - -c
+                - exec pg_isready -U "{{ .Values.database.user }}" -d "{{ .Values.database.name }}" -h 127.0.0.1 -p {{ .Values.database.port }}
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            successThreshold: 1
+            failureThreshold: 6
+          readinessProbe:
+            exec:
+              command:
+                - /bin/sh
+                - -c
+                - exec pg_isready -U "{{ .Values.database.user }}" -d "{{ .Values.database.name }}" -h 127.0.0.1 -p {{ .Values.database.port }}
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            timeoutSeconds: 5
+            successThreshold: 1
+            failureThreshold: 3
+      volumes:
+        - name: db-init-script
+          configMap:
+            name: {{ .Release.Name }}-db-init
+  volumeClaimTemplates:
+    - metadata:
+        name: postgres-storage
+        labels:
+          app: {{ .Values.global.app }}
+          component: database
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        resources:
+          requests:
+            storage: {{ .Values.database.volumeSize }}

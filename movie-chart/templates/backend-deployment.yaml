@@ -9,37 +9,46 @@ spec:
   selector:
     matchLabels:
       app: {{ .Values.global.app }}
+      component: backend
   template:
     metadata:
       labels:
         app: {{ .Values.global.app }}
+        component: backend
     spec:
       containers:
         - name: {{ .Values.backend.name }}
           image: "{{ .Values.backend.image }}"
           ports:
             - containerPort: {{ .Values.backend.port }}
+          envFrom:
+            - configMapRef:
+                name: {{ .Release.Name }}-config
+
           env:
-            {{- range $key, $value := .Values.backend.env }}
-            - name: {{ $key }}
-              value: "{{ $value }}"
-            {{- end }}
-
-
-            - name: DB_USER
-              value: "{{ .Values.database.user }}"
-            - name: DB_NAME
-              value: "{{ .Values.database.name }}"
-            # These environment variables are sensitive and should be stored in a secret.
+            # הסיסמה של ה-DB (נשלף מה-Secret)
             - name: DB_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  # This should be the name of your secret.
-                  name: movie-db-secret
+                  name: {{ .Release.Name }}-secrets
                   key: DB_PASSWORD
+                  
+            # ה-Secret של ה-JWT (נשלף מה-Secret)
             - name: JWT_SECRET
               valueFrom:
                 secretKeyRef:
-                  # This should be the name of your secret.
-                  name: movie-db-secret
+                  name: {{ .Release.Name }}-secrets
                   key: JWT_SECRET
+                  
+            # API Keys for external services
+            - name: OPENAI_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Release.Name }}-secrets
+                  key: OPENAI_API_KEY
+                  
+            - name: TMDB_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Release.Name }}-secrets
+                  key: TMDB_API_KEY
