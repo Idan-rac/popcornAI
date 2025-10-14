@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { apiFetch } from '../utils/api'
 import PopcornLogo from './PopcornLogo'
 import './AuthForm.css'
 
@@ -24,7 +25,7 @@ const LoginForm = ({ onLogin }) => {
     setError('')
 
     try {
-      const response = await fetch('/api/login', {
+      const response = await apiFetch('/api/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

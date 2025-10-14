@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import './AuthForm.css'
+import { apiFetch } from '../utils/api'
 
 const RegisterForm = ({ onLogin }) => {
   const [formData, setFormData] = useState({
@@ -37,7 +38,7 @@ const RegisterForm = ({ onLogin }) => {
     }
 
     try {
-      const response = await fetch('/api/register', {
+      const response = await apiFetch('/api/register', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

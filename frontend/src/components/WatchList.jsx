@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { apiFetch } from '../utils/api'
 import './WatchList.css'
 
 const WatchList = ({ user, onBackToChat, onLogout, onWatchlistUpdate }) => {
@@ -15,7 +16,7 @@ const WatchList = ({ user, onBackToChat, onLogout, onWatchlistUpdate }) => {
     try {
       setLoading(true)
       const token = localStorage.getItem('token')
-      const response = await fetch('/api/watchlist', {
+      const response = await apiFetch('/api/watchlist', {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -38,7 +39,7 @@ const WatchList = ({ user, onBackToChat, onLogout, onWatchlistUpdate }) => {
     try {
       const token = localStorage.getItem('token')
       
-      const response = await fetch(`/api/watchlist/${movieId}`, {
+      const response = await apiFetch(`/api/watchlist/${movieId}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`
