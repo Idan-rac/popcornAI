@@ -37,6 +37,3 @@ Thumbs.db
 ingress-default.yaml
 kubectl
 
-# Kubernetes secrets (contain sensitive data)
-**/secret.yaml
-**/secrets.yaml
