@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react'
 import WatchList from './WatchList'
 import PopcornLogo from './PopcornLogo'
 import './Dashboard.css'
-import { apiFetch } from '../utils/api'
 
 const Dashboard = ({ user, onLogout }) => {
   const [userInput, setUserInput] = useState('')
@@ -38,7 +37,7 @@ const Dashboard = ({ user, onLogout }) => {
   const loadWatchlist = async () => {
     try {
       const token = localStorage.getItem('token')
-      const response = await apiFetch('/api/watchlist', {
+      const response = await fetch('/api/watchlist', {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -65,7 +64,7 @@ const Dashboard = ({ user, onLogout }) => {
       const token = localStorage.getItem('token')
       const movieId = movie.tmdb_id || `${movie.title}-${movie.year}`
       
-      const response = await apiFetch('/api/watchlist', {
+      const response = await fetch('/api/watchlist', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -97,7 +96,7 @@ const Dashboard = ({ user, onLogout }) => {
     try {
       const token = localStorage.getItem('token')
       
-      const response = await apiFetch(`/api/watchlist/${movieId}`, {
+      const response = await fetch(`/api/watchlist/${movieId}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`
@@ -161,7 +160,7 @@ const Dashboard = ({ user, onLogout }) => {
     setRecommendations(null)
     
     try {
-      const response = await apiFetch('/api/recommendations', {
+      const response = await fetch('/api/recommendations', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
