@@ -43,3 +43,9 @@ ingress:
   className: "traefik"  # Changed to traefik to match your cluster
   annotations:
     traefik.ingress.kubernetes.io/router.entrypoints: web
+# Secret values (base64 encoded)
+secrets:
+  dbPassword: cG9zdGdyZXM=
+  jwtSecret: eW91ci1zdXBlci1zZWNyZXQtand0LWtleS1jaGFuZ2UtdGhpcy1pbi1wcm9kdWN0aW9u
+  openaiApiKey: c2stcHJvai1SNjIwTDNyVWVGZDlfTmJLT1NrWVlsRXRwU0J6THVkOXJNdjBGYXVqTlJSUTBfNU1IZmtRbXFWTldnMG1rcVRSRV9TcFhDM281blQzQmxia0ZKSzhSMWY0TkJpeDFKMFBWcnhVOWhuQWx6TFl0c2F4Rk5TZ2Y4N0hiazNQcmVjVllESUZGb3otVzdLRGIxNGI3ZlNlMEp4eExBZ0E=
+  tmdbApiKey: MWI0ZDlhMTljNjhjMGFjYWFkNGExZTc4NDI1MTU4NGY=
