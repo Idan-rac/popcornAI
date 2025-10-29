@@ -14,6 +14,7 @@ const Dashboard = ({ user, onLogout }) => {
   const [notification, setNotification] = useState(null)
   const [watchlistStatus, setWatchlistStatus] = useState({})
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+  const [isUserDropdownOpen, setIsUserDropdownOpen] = useState(false)
 
   // Load watchlist on component mount
   useEffect(() => {
@@ -26,13 +27,16 @@ const Dashboard = ({ user, onLogout }) => {
       if (isMobileMenuOpen && !event.target.closest('.mobile-menu-container')) {
         setIsMobileMenuOpen(false)
       }
+      if (isUserDropdownOpen && !event.target.closest('.user-dropdown-container')) {
+        setIsUserDropdownOpen(false)
+      }
     }
 
     document.addEventListener('mousedown', handleClickOutside)
     return () => {
       document.removeEventListener('mousedown', handleClickOutside)
     }
-  }, [isMobileMenuOpen])
+  }, [isMobileMenuOpen, isUserDropdownOpen])
 
   const loadWatchlist = async () => {
     try {
@@ -211,9 +215,19 @@ const Dashboard = ({ user, onLogout }) => {
     setIsMobileMenuOpen(!isMobileMenuOpen)
   }
 
+  const toggleUserDropdown = () => {
+    setIsUserDropdownOpen(!isUserDropdownOpen)
+  }
+
   const handleLogout = () => {
     setIsMobileMenuOpen(false)
+    setIsUserDropdownOpen(false)
     onLogout()
+  }
+
+  const handleWatchlistFromDropdown = () => {
+    setIsUserDropdownOpen(false)
+    navigateToWatchlist()
   }
 
   return (
@@ -227,16 +241,32 @@ const Dashboard = ({ user, onLogout }) => {
             </div>
           </div>
           <div className="user-section">
-            <button 
-              className="watchlist-btn"
-              onClick={navigateToWatchlist}
-            >
-              ❤️ Watch List ({watchlist.length})
-            </button>
-            <span className="welcome-text">Welcome, {user.username}!</span>
-            <button onClick={onLogout} className="logout-btn">
-              Logout
-            </button>
+            <div className="user-dropdown-container">
+              <button 
+                className="username-btn"
+                onClick={toggleUserDropdown}
+              >
+                {user.username}
+                <span className="dropdown-arrow">▼</span>
+              </button>
+              
+              {isUserDropdownOpen && (
+                <div className="user-dropdown">
+                  <button 
+                    className="dropdown-item"
+                    onClick={handleWatchlistFromDropdown}
+                  >
+                    ❤️ Watch List ({watchlist.length})
+                  </button>
+                  <button 
+                    className="dropdown-item logout-item"
+                    onClick={handleLogout}
+                  >
+                    Logout
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
         </div>
         {/* Mobile-only minimal watchlist button */}

@@ -70,28 +70,88 @@
   gap: 0.75rem;
 }
 
-.welcome-text {
-  color: #6c757d;
-  font-weight: 500;
+.user-dropdown-container {
+  position: relative;
+  display: inline-block;
 }
 
-.logout-btn {
-  background: #dc3545;
+.username-btn {
+  background: linear-gradient(45deg, #272030, #C79A99);
   color: white;
   border: none;
-  padding: 0.5rem 0.9rem;
-  border-radius: 8px;
+  padding: 0.6rem 1.2rem;
+  border-radius: 25px;
+  font-size: 0.95rem;
+  font-weight: 600;
   cursor: pointer;
-  font-weight: 500;
   transition: all 0.3s ease;
-  font-size: 0.9rem;
+  box-shadow: 0 2px 8px rgba(39, 32, 48, 0.3);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
 }
 
-.logout-btn:hover {
-  background: #c82333;
-  transform: translateY(-1px);
-  box-shadow: 0 4px 8px rgba(220, 53, 69, 0.3);
+.username-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(39, 32, 48, 0.4);
+  background: linear-gradient(45deg, #C79A99, #272030);
 }
+
+.dropdown-arrow {
+  font-size: 0.8rem;
+  transition: transform 0.3s ease;
+}
+
+.username-btn:hover .dropdown-arrow {
+  transform: rotate(180deg);
+}
+
+.user-dropdown {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  border: 1px solid #e9ecef;
+  min-width: 200px;
+  overflow: hidden;
+  animation: fadeIn 0.2s ease-out;
+  z-index: 1000;
+  margin-top: 0.5rem;
+}
+
+.dropdown-item {
+  width: 100%;
+  background: white;
+  color: #272030;
+  border: none;
+  padding: 0.75rem 1rem;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-align: left;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.dropdown-item:hover {
+  background: #f8f9fa;
+  color: #C79A99;
+}
+
+.dropdown-item.logout-item {
+  color: #dc3545;
+  border-top: 1px solid #e9ecef;
+}
+
+.dropdown-item.logout-item:hover {
+  background: #dc3545;
+  color: white;
+}
+
 
 .dashboard-content {
   max-width: 1200px;
@@ -687,25 +747,6 @@
   }
 }
 
-/* Watch List Button */
-.watchlist-btn {
-  background: linear-gradient(45deg, #272030, #C79A99);
-  color: white;
-  border: none;
-  padding: 0.6rem 1.2rem;
-  border-radius: 25px;
-  font-size: 0.95rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0 2px 8px rgba(39, 32, 48, 0.3);
-}
-
-.watchlist-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(39, 32, 48, 0.4);
-  background: linear-gradient(45deg, #C79A99, #272030);
-}
 
 /* Heart Button on Movie Cards */
 .heart-btn {
