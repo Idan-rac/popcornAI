@@ -4,10 +4,37 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { Pool } = require('pg');
 const OpenAI = require('openai');
+const client = require('prom-client');  // ADD THIS LINE
 require('dotenv').config({ path: './.env' });
 
 const app = express();
 const PORT = process.env.PORT || 5000;
+
+// ADD THESE LINES - Prometheus metrics setup
+const register = new client.Registry();
+client.collectDefaultMetrics({ register });
+
+const httpRequestsTotal = new client.Counter({
+  name: 'http_requests_total',
+  help: 'Total number of HTTP requests',
+  labelNames: ['method', 'route', 'status_code'],
+  registers: [register]
+});
+
+const httpRequestDuration = new client.Histogram({
+  name: 'http_request_duration_seconds', 
+  help: 'Duration of HTTP requests in seconds',
+  labelNames: ['method', 'route', 'status_code'],
+  buckets: [0.1, 0.5, 1, 2, 5],
+  registers: [register]
+});
+
+const dbConnectionsActive = new client.Gauge({
+  name: 'db_connections_active',
+  help: 'Number of active database connections',
+  registers: [register]
+});
+// END OF METRICS SETUP
 
 // Initialize OpenAI
 const openai = new OpenAI({
@@ -17,6 +44,30 @@ const openai = new OpenAI({
 // Middleware
 app.use(cors());
 app.use(express.json());
+
+// ADD THIS MIDDLEWARE - Metrics collection (must be after express.json())
+app.use((req, res, next) => {
+  const start = Date.now();
+  
+  res.on('finish', () => {
+    const duration = (Date.now() - start) / 1000;
+    const route = req.route ? req.route.path : req.path;
+    
+    httpRequestsTotal.inc({
+      method: req.method,
+      route: route,
+      status_code: res.statusCode
+    });
+    
+    httpRequestDuration.observe({
+      method: req.method,
+      route: route, 
+      status_code: res.statusCode
+    }, duration);
+  });
+  
+  next();
+});
 
 // Database connection
 const pool = new Pool({
@@ -30,10 +81,12 @@ const pool = new Pool({
 // Test database connection
 pool.on('connect', () => {
   console.log('Connected to PostgreSQL database');
+  dbConnectionsActive.inc(); // Track connection
 });
 
 pool.on('error', (err) => {
   console.error('Database connection error:', err);
+  dbConnectionsActive.dec(); // Track disconnection
 });
 
 // TMDB API functions
@@ -421,7 +474,28 @@ app.get('/api/watchlist/check/:movieId', authenticateToken, async (req, res) => 
   }
 });
 
-// Health check endpoint
+// Metrics endpoint for Prometheus
+app.get('/metrics', async (req, res) => {
+  try {
+    res.set('Content-Type', register.contentType);
+    const metrics = await register.metrics();
+    res.end(metrics);
+  } catch (error) {
+    res.status(500).end(error);
+  }
+});
+
+// Enhanced health check endpoint
+app.get('/health', (req, res) => {
+  res.status(200).json({ 
+    status: 'healthy', 
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime(),
+    environment: process.env.NODE_ENV || 'development'
+  });
+});
+
+// Health check endpoint (your existing one stays the same)
 app.get('/api/health', (req, res) => {
   res.json({ message: 'Backend is running', timestamp: new Date().toISOString() });
 });
