@@ -14,11 +14,23 @@ const Dashboard = ({ user, onLogout }) => {
   const [notification, setNotification] = useState(null)
   const [watchlistStatus, setWatchlistStatus] = useState({})
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+  const [isUserDropdownOpen, setIsUserDropdownOpen] = useState(false)
+  const [selectedProfilePicture, setSelectedProfilePicture] = useState('anime_r2_c2_processed_by_imagy.png')
+  const [isProfilePictureModalOpen, setIsProfilePictureModalOpen] = useState(false)
 
-  // Load watchlist on component mount
+  // Load watchlist and profile picture on component mount
   useEffect(() => {
     loadWatchlist()
+    loadProfilePicture()
   }, [])
+
+  // Load profile picture from localStorage
+  const loadProfilePicture = () => {
+    const savedProfilePicture = localStorage.getItem('selectedProfilePicture')
+    if (savedProfilePicture) {
+      setSelectedProfilePicture(savedProfilePicture)
+    }
+  }
 
   // Close mobile menu when clicking outside
   useEffect(() => {
@@ -26,13 +38,19 @@ const Dashboard = ({ user, onLogout }) => {
       if (isMobileMenuOpen && !event.target.closest('.mobile-menu-container')) {
         setIsMobileMenuOpen(false)
       }
+      if (isUserDropdownOpen && !event.target.closest('.user-dropdown-container')) {
+        setIsUserDropdownOpen(false)
+      }
+      if (isProfilePictureModalOpen && !event.target.closest('.profile-picture-modal')) {
+        setIsProfilePictureModalOpen(false)
+      }
     }
 
     document.addEventListener('mousedown', handleClickOutside)
     return () => {
       document.removeEventListener('mousedown', handleClickOutside)
     }
-  }, [isMobileMenuOpen])
+  }, [isMobileMenuOpen, isUserDropdownOpen, isProfilePictureModalOpen])
 
   const loadWatchlist = async () => {
     try {
@@ -211,9 +229,35 @@ const Dashboard = ({ user, onLogout }) => {
     setIsMobileMenuOpen(!isMobileMenuOpen)
   }
 
+  const toggleUserDropdown = () => {
+    setIsUserDropdownOpen(!isUserDropdownOpen)
+  }
+
   const handleLogout = () => {
     setIsMobileMenuOpen(false)
+    setIsUserDropdownOpen(false)
     onLogout()
+  }
+
+  const handleWatchlistFromDropdown = () => {
+    setIsUserDropdownOpen(false)
+    navigateToWatchlist()
+  }
+
+  const handleChangeProfilePicture = () => {
+    setIsUserDropdownOpen(false)
+    setIsProfilePictureModalOpen(true)
+  }
+
+  const handleProfilePictureSelect = (pictureName) => {
+    setSelectedProfilePicture(pictureName)
+    localStorage.setItem('selectedProfilePicture', pictureName)
+    setIsProfilePictureModalOpen(false)
+    showNotification('Profile picture updated!')
+  }
+
+  const closeProfilePictureModal = () => {
+    setIsProfilePictureModalOpen(false)
   }
 
   return (
@@ -227,16 +271,45 @@ const Dashboard = ({ user, onLogout }) => {
             </div>
           </div>
           <div className="user-section">
-            <button 
-              className="watchlist-btn"
-              onClick={navigateToWatchlist}
-            >
-              ❤️ Watch List ({watchlist.length})
-            </button>
-            <span className="welcome-text">Welcome, {user.username}!</span>
-            <button onClick={onLogout} className="logout-btn">
-              Logout
-            </button>
+            <div className="profile-picture-container">
+              <img 
+                src={`/profile-pictures/${encodeURIComponent(selectedProfilePicture)}`}
+                alt="Profile"
+                className="profile-picture"
+              />
+            </div>
+            <div className="user-dropdown-container">
+              <button 
+                className="username-btn"
+                onClick={toggleUserDropdown}
+              >
+                {user.username}
+                <span className="dropdown-arrow">▼</span>
+              </button>
+              
+              {isUserDropdownOpen && (
+                <div className="user-dropdown">
+                  <button 
+                    className="dropdown-item"
+                    onClick={handleChangeProfilePicture}
+                  >
+                    🖼️ Change Profile Picture
+                  </button>
+                  <button 
+                    className="dropdown-item"
+                    onClick={handleWatchlistFromDropdown}
+                  >
+                    ❤️ Watch List ({watchlist.length})
+                  </button>
+                  <button 
+                    className="dropdown-item logout-item"
+                    onClick={handleLogout}
+                  >
+                    Logout
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
         </div>
         {/* Mobile-only minimal watchlist button */}
@@ -447,6 +520,70 @@ const Dashboard = ({ user, onLogout }) => {
             <div className="notification-content">
               <span className="notification-icon">❤️</span>
               <span className="notification-text">{notification}</span>
+            </div>
+          </div>
+        )}
+
+        {/* Profile Picture Selection Modal */}
+        {isProfilePictureModalOpen && (
+          <div className="modal-overlay" onClick={closeProfilePictureModal}>
+            <div className="profile-picture-modal" onClick={(e) => e.stopPropagation()}>
+              <div className="modal-header">
+                <h2>Choose Your Profile Picture</h2>
+                <button className="modal-close" onClick={closeProfilePictureModal}>×</button>
+              </div>
+              <div className="profile-picture-grid">
+                {[
+                  'anime_r2_c2_processed_by_imagy.png', 'anime_r2_c3_processed_by_imagy.png', 'anime_r2_c4_processed_by_imagy.png',
+                  'anime_r3_c2_processed_by_imagy.png', 'anime_r3_c3_processed_by_imagy.png', 'anime_r3_c4_processed_by_imagy.png',
+                  'anime_r3_c5_processed_by_imagy.png', 'anime_r4_c2_processed_by_imagy.png', 'anime_r4_c3_processed_by_imagy.png',
+                  'anime_r4_c4_processed_by_imagy.png', 'anime_r4_c5_processed_by_imagy.png', 'anime_r5_c2_processed_by_imagy.png',
+                  'anime_r5_c3_processed_by_imagy.png', 'anime_r5_c4_processed_by_imagy.png', 'anime_r5_c5_processed_by_imagy.png',
+                  'anime2_r2_c2_processed_by_imagy.png', 'anime2_r2_c3_processed_by_imagy.png', 'anime2_r2_c4_processed_by_imagy.png',
+                  'anime2_r3_c2_processed_by_imagy.png', 'anime2_r3_c3_processed_by_imagy.png', 'anime2_r3_c4_processed_by_imagy.png',
+                  'anime2_r3_c5_processed_by_imagy.png', 'anime2_r4_c2_processed_by_imagy.png', 'anime2_r4_c3_processed_by_imagy.png',
+                  'anime2_r4_c4_processed_by_imagy.png', 'anime2_r4_c5_processed_by_imagy.png', 'anime2_r5_c2_processed_by_imagy.png',
+                  'anime2_r5_c3_processed_by_imagy.png', 'anime2_r5_c4_processed_by_imagy.png', 'anime2_r5_c5_processed_by_imagy.png',
+                  'blue_r2_c2_processed_by_imagy.png', 'blue_r2_c3_processed_by_imagy.png', 'blue_r2_c4_processed_by_imagy.png',
+                  'blue_r3_c2_processed_by_imagy.png', 'blue_r3_c3_processed_by_imagy.png', 'blue_r3_c5_processed_by_imagy.png',
+                  'blue_r4_c2_processed_by_imagy.png', 'blue_r4_c3_processed_by_imagy.png', 'blue_r4_c4_processed_by_imagy.png',
+                  'blue_r5_c2_processed_by_imagy.png', 'blue_r5_c5_processed_by_imagy.png', 'dark_r2_c2_processed_by_imagy.png',
+                  'dark_r2_c3_processed_by_imagy.png', 'dark_r2_c4_processed_by_imagy.png', 'dark_r2_c5_processed_by_imagy.png',
+                  'dark_r3_c2_processed_by_imagy.png', 'dark_r3_c3_processed_by_imagy.png', 'dark_r3_c4_processed_by_imagy.png',
+                  'dark_r3_c5_processed_by_imagy.png', 'dark_r4_c2_processed_by_imagy.png', 'dark_r4_c3_processed_by_imagy.png',
+                  'dark_r4_c4_processed_by_imagy.png', 'dark_r4_c5_processed_by_imagy.png', 'dark_r5_c2_processed_by_imagy.png',
+                  'dark_r5_c3_processed_by_imagy.png', 'dark_r5_c4_processed_by_imagy.png', 'dark_r5_c5_processed_by_imagy.png',
+                  'green_r2_c2_processed_by_imagy.png', 'green_r2_c3_processed_by_imagy.png', 'green_r2_c5_processed_by_imagy.png',
+                  'green_r3_c2_processed_by_imagy.png', 'green_r3_c3_processed_by_imagy.png', 'green_r3_c5_processed_by_imagy.png',
+                  'green_r4_c2_processed_by_imagy.png', 'green_r4_c3_processed_by_imagy.png', 'green_r4_c5_processed_by_imagy.png',
+                  'green_r5_c2_processed_by_imagy.png', 'green_r5_c3_processed_by_imagy.png', 'green_r5_c5_processed_by_imagy.png',
+                  'magic_r2_c2_processed_by_imagy - Copy.png', 'magic_r2_c3_processed_by_imagy.png', 'magic_r2_c4_processed_by_imagy.png',
+                  'magic_r2_c5_processed_by_imagy.png', 'magic_r3_c3_processed_by_imagy.png', 'magic_r3_c4_processed_by_imagy.png',
+                  'magic_r3_c5_processed_by_imagy.png', 'magic_r4_c2_processed_by_imagy.png', 'magic_r4_c3_processed_by_imagy.png',
+                  'magic_r4_c4_processed_by_imagy.png', 'magic_r4_c5_processed_by_imagy.png', 'magic_r5_c2_processed_by_imagy.png',
+                  'magic_r5_c3_processed_by_imagy.png', 'magic_r5_c5_processed_by_imagy.png', 'pink_r2_c2_processed_by_imagy.png',
+                  'pink_r2_c3_processed_by_imagy.png', 'pink_r2_c5_processed_by_imagy.png', 'pink_r3_c2_processed_by_imagy.png',
+                  'pink_r3_c3_processed_by_imagy.png', 'pink_r3_c4_processed_by_imagy.png', 'pink_r3_c5_processed_by_imagy.png',
+                  'pink_r4_c2_processed_by_imagy.png', 'pink_r4_c3_processed_by_imagy.png', 'pink_r4_c4_processed_by_imagy.png',
+                  'pink_r4_c5_processed_by_imagy.png', 'red_r2_c2_processed_by_imagy - Copy.png', 'red_r2_c3_processed_by_imagy.png',
+                  'red_r2_c4_processed_by_imagy.png', 'red_r2_c5_processed_by_imagy - Copy.png', 'red_r3_c2_processed_by_imagy.png',
+                  'red_r3_c3_processed_by_imagy.png', 'red_r3_c4_processed_by_imagy - Copy.png', 'red_r3_c5_processed_by_imagy.png',
+                  'red_r4_c2_processed_by_imagy.png', 'red_r4_c3_processed_by_imagy.png', 'red_r4_c4_processed_by_imagy.png',
+                  'red_r4_c5_processed_by_imagy.png'
+                ].map((pictureName) => (
+                  <div 
+                    key={pictureName}
+                    className={`profile-picture-option ${selectedProfilePicture === pictureName ? 'selected' : ''}`}
+                    onClick={() => handleProfilePictureSelect(pictureName)}
+                  >
+                    <img 
+                      src={`/profile-pictures/${encodeURIComponent(pictureName)}`}
+                      alt="Profile option"
+                      className="profile-picture-preview"
+                    />
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         )}

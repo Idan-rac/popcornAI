@@ -49,3 +49,15 @@ secrets:
   jwtSecret: eW91ci1zdXBlci1zZWNyZXQtand0LWtleS1jaGFuZ2UtdGhpcy1pbi1wcm9kdWN0aW9u
   openaiApiKey: c2stcHJvai1SNjIwTDNyVWVGZDlfTmJLT1NrWVlsRXRwU0J6THVkOXJNdjBGYXVqTlJSUTBfNU1IZmtRbXFWTldnMG1rcVRSRV9TcFhDM281blQzQmxia0ZKSzhSMWY0TkJpeDFKMFBWcnhVOWhuQWx6TFl0c2F4Rk5TZ2Y4N0hiazNQcmVjVllESUZGb3otVzdLRGIxNGI3ZlNlMEp4eExBZ0E=
   tmdbApiKey: MWI0ZDlhMTljNjhjMGFjYWFkNGExZTc4NDI1MTU4NGY=
+
+# ----------------------------------------
+# 5. Monitoring settings
+monitoring:
+  enabled: true 
+  serviceMonitor:
+    enabled: true
+    interval: 30s
+    path: /metrics
+  # זהו ה-alias של kube-prometheus-stack
+  prometheus:
+    {}
