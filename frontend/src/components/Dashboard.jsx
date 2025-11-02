@@ -272,11 +272,12 @@ const Dashboard = ({ user, onLogout }) => {
           </div>
           <div className="user-section">
             <div className="profile-picture-container">
-              <img 
-                src={`/profile-pictures/${encodeURIComponent(selectedProfilePicture)}`}
-                alt="Profile"
-                className="profile-picture"
-              />
+            <img 
+              src={`/profile-pictures/${encodeURIComponent(selectedProfilePicture)}`}
+              alt="Profile"
+              className="profile-picture"
+              onClick={toggleUserDropdown}
+            />
             </div>
             <div className="user-dropdown-container">
               <button 
@@ -290,57 +291,57 @@ const Dashboard = ({ user, onLogout }) => {
               {isUserDropdownOpen && (
                 <div className="user-dropdown">
                   <button 
+                    className="dropdown-item logout-item"
+                    onClick={handleLogout}
+                  >
+                    Logout
+                  </button>
+                  <button 
                     className="dropdown-item"
                     onClick={handleChangeProfilePicture}
                   >
-                    🖼️ Change Profile Picture
+                    Change Profile Picture
                   </button>
                   <button 
                     className="dropdown-item"
                     onClick={handleWatchlistFromDropdown}
                   >
-                    ❤️ Watch List ({watchlist.length})
-                  </button>
-                  <button 
-                    className="dropdown-item logout-item"
-                    onClick={handleLogout}
-                  >
-                    Logout
+                    Movies I Liked ({watchlist.length})
                   </button>
                 </div>
               )}
             </div>
           </div>
         </div>
-        {/* Mobile-only minimal watchlist button */}
+        {/* Mobile-only profile picture button and dropdown */}
         <div className="mobile-watchlist-container">
-          <button 
-            className="mobile-watchlist-btn"
-            onClick={navigateToWatchlist}
-            title={`Watch List (${watchlist.length})`}
-          >
-            ❤️
-          </button>
-        </div>
-        
-        {/* Mobile-only three-dots menu button */}
-        <div className="mobile-menu-container">
-          <button 
-            className="mobile-menu-btn"
-            onClick={toggleMobileMenu}
-            title="Menu"
-          >
-            ⋯
-          </button>
-          
-          {/* Mobile menu dropdown */}
-          {isMobileMenuOpen && (
-            <div className="mobile-menu-dropdown">
+          <div className="mobile-profile-btn">
+            <img 
+              src={`/profile-pictures/${encodeURIComponent(selectedProfilePicture)}`}
+              alt="Profile"
+              className="profile-picture"
+              onClick={toggleUserDropdown}
+            />
+          </div>
+          {isUserDropdownOpen && (
+            <div className="user-dropdown mobile-user-dropdown">
               <button 
-                className="mobile-logout-btn"
+                className="dropdown-item logout-item"
                 onClick={handleLogout}
               >
                 Logout
+              </button>
+              <button 
+                className="dropdown-item"
+                onClick={handleChangeProfilePicture}
+              >
+                Change Profile Picture
+              </button>
+              <button 
+                className="dropdown-item"
+                onClick={handleWatchlistFromDropdown}
+              >
+                Movies I Liked ({watchlist.length})
               </button>
             </div>
           )}

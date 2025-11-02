@@ -671,7 +671,7 @@
   }
   
   .main-textarea {
-    min-height: 120px;
+    min-height: 90px;
     padding: 0.8rem;
     font-size: 0.95rem;
   }
@@ -913,40 +913,24 @@
   background: #c82333;
 }
 
-.mobile-watchlist-btn {
-  background: transparent;
-  color: #dc3545;
-  border: none;
-  width: 50px;
-  height: 50px;
-  border-radius: 50%;
-  font-size: 1.8rem;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+.mobile-profile-btn {
   position: fixed;
   top: 20px;
   right: 20px;
   z-index: 1000;
-  outline: none;
 }
 
-.mobile-watchlist-btn:hover {
-  transform: scale(1.1);
-  color: #c82333;
+.mobile-profile-btn .profile-picture {
+  width: 44px;
+  height: 44px;
+  border-width: 2px;
 }
 
-.mobile-watchlist-btn:focus {
-  outline: none;
-}
-
-.mobile-watchlist-btn:active {
-  outline: none;
-  background: transparent;
-  color: #dc3545;
-  transform: none;
+.mobile-user-dropdown {
+  position: fixed;
+  top: 74px;
+  right: 20px;
+  z-index: 1001;
 }
 
 /* Responsive Design */
@@ -984,7 +968,7 @@
   }
   
   .main-textarea {
-    min-height: 150px;
+    min-height: 100px;
     padding: 1rem;
     font-size: 1rem;
   }
