@@ -35,10 +35,23 @@ const Dashboard = ({ user, onLogout }) => {
   // Close mobile menu when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
+      // Don't close if clicking inside dropdown items
+      if (event.target.closest('.dropdown-item') || 
+          event.target.classList.contains('dropdown-item')) {
+        return
+      }
+
       if (isMobileMenuOpen && !event.target.closest('.mobile-menu-container')) {
         setIsMobileMenuOpen(false)
       }
-      if (isUserDropdownOpen && !event.target.closest('.user-dropdown-container')) {
+      
+      // Check both desktop and mobile dropdown containers
+      const isInDesktopDropdown = event.target.closest('.user-dropdown-container')
+      const isInMobileDropdown = event.target.closest('.mobile-watchlist-container') || 
+                                  event.target.closest('.mobile-user-dropdown') ||
+                                  event.target.closest('.mobile-profile-btn')
+      
+      if (isUserDropdownOpen && !isInDesktopDropdown && !isInMobileDropdown) {
         setIsUserDropdownOpen(false)
       }
       if (isProfilePictureModalOpen && !event.target.closest('.profile-picture-modal')) {
@@ -46,9 +59,9 @@ const Dashboard = ({ user, onLogout }) => {
       }
     }
 
-    document.addEventListener('mousedown', handleClickOutside)
+    document.addEventListener('click', handleClickOutside)
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside)
+      document.removeEventListener('click', handleClickOutside)
     }
   }, [isMobileMenuOpen, isUserDropdownOpen, isProfilePictureModalOpen])
 
@@ -233,18 +246,21 @@ const Dashboard = ({ user, onLogout }) => {
     setIsUserDropdownOpen(!isUserDropdownOpen)
   }
 
-  const handleLogout = () => {
+  const handleLogout = (e) => {
+    if (e) e.stopPropagation()
     setIsMobileMenuOpen(false)
     setIsUserDropdownOpen(false)
     onLogout()
   }
 
-  const handleWatchlistFromDropdown = () => {
+  const handleWatchlistFromDropdown = (e) => {
+    if (e) e.stopPropagation()
     setIsUserDropdownOpen(false)
     navigateToWatchlist()
   }
 
-  const handleChangeProfilePicture = () => {
+  const handleChangeProfilePicture = (e) => {
+    if (e) e.stopPropagation()
     setIsUserDropdownOpen(false)
     setIsProfilePictureModalOpen(true)
   }
@@ -324,7 +340,7 @@ const Dashboard = ({ user, onLogout }) => {
             />
           </div>
           {isUserDropdownOpen && (
-            <div className="user-dropdown mobile-user-dropdown">
+            <div className="user-dropdown mobile-user-dropdown" onClick={(e) => e.stopPropagation()}>
               <button 
                 className="dropdown-item logout-item"
                 onClick={handleLogout}
