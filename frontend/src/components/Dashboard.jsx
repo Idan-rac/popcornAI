@@ -65,6 +65,21 @@ const Dashboard = ({ user, onLogout }) => {
     }
   }, [isMobileMenuOpen, isUserDropdownOpen, isProfilePictureModalOpen])
 
+  // Scroll down when recommendations are loaded
+  useEffect(() => {
+    if (recommendations) {
+      // Small delay to ensure the DOM has updated
+      setTimeout(() => {
+        const recommendationsSection = document.querySelector('.recommendations-section')
+        if (recommendationsSection) {
+          recommendationsSection.scrollIntoView({ behavior: 'smooth', block: 'start' })
+          // Scroll a bit more to show the first movie better
+          window.scrollBy({ top: 100, behavior: 'smooth' })
+        }
+      }, 100)
+    }
+  }, [recommendations])
+
   const loadWatchlist = async () => {
     try {
       const token = localStorage.getItem('token')
@@ -417,9 +432,6 @@ const Dashboard = ({ user, onLogout }) => {
 
           {recommendations && (
             <div className="recommendations-section">
-              <h3 className="recommendations-heading">
-                🎬 Movie Recommendations for: "{recommendations.userInput}"
-              </h3>
               <div className="movies-grid">
                 {recommendations.movies.map((movie, index) => {
                   const movieId = movie.tmdb_id || `${movie.title}-${movie.year}`
