@@ -8,7 +8,21 @@ function App() {
   const [user, setUser] = useState(null)
 
   useEffect(() => {
-    // Check if user is already logged in
+    // DEV MODE: Auto-authenticate in development for local testing
+    // Set VITE_DEV_MODE=true in .env or run with: VITE_DEV_MODE=true npm run dev
+    const isDevMode = import.meta.env.VITE_DEV_MODE === 'true'
+    
+    if (isDevMode) {
+      // Auto-login with mock user for local testing
+      const mockUser = { username: 'dev-user', id: 'dev-123' }
+      localStorage.setItem('token', 'dev-token')
+      localStorage.setItem('user', JSON.stringify(mockUser))
+      setIsAuthenticated(true)
+      setUser(mockUser)
+      return
+    }
+
+    // Check if user is already logged in (normal flow)
     const token = localStorage.getItem('token')
     const userData = localStorage.getItem('user')
     
