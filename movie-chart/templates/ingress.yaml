@@ -19,13 +19,6 @@ spec:
   - host: {{ .Values.ingress.host }}
     http:
       paths:
-      - path: /
-        pathType: Prefix
-        backend:
-          service:
-            name: {{ .Release.Name }}-{{ .Values.frontend.name }}-service
-            port:
-              number: {{ .Values.frontend.port }}
       - path: /api
         pathType: Prefix
         backend:
@@ -33,16 +26,16 @@ spec:
             name: {{ .Release.Name }}-{{ .Values.backend.name }}-service
             port:
               number: {{ .Values.backend.port }}
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: {{ .Release.Name }}-{{ .Values.frontend.name }}-service
+            port:
+              number: {{ .Values.frontend.port }}
   {{- else }}
   - http:
       paths:
-      - path: /
-        pathType: Prefix
-        backend:
-          service:
-            name: {{ .Release.Name }}-{{ .Values.frontend.name }}-service
-            port:
-              number: {{ .Values.frontend.port }}
       - path: /api
         pathType: Prefix
         backend:
@@ -50,5 +43,12 @@ spec:
             name: {{ .Release.Name }}-{{ .Values.backend.name }}-service
             port:
               number: {{ .Values.backend.port }}
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: {{ .Release.Name }}-{{ .Values.frontend.name }}-service
+            port:
+              number: {{ .Values.frontend.port }}
   {{- end }}
 {{- end }}
