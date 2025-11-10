@@ -39,7 +39,7 @@ frontend:
 # 4. Ingress settings
 ingress:
   enabled: true
-  host: "" # Empty host allows IP-based access
+  host: "popcornai" # Empty host allows IP-based access
   className: "traefik"  # Changed to traefik to match your cluster
   annotations:
     traefik.ingress.kubernetes.io/router.entrypoints: web
