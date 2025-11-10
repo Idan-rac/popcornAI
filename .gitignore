@@ -37,3 +37,8 @@ Thumbs.db
 ingress-default.yaml
 kubectl
 
+# Terraform local artifacts
+**/.terraform/
+*.tfstate
+*.tfstate.*
+.terraform.lock.hcl
