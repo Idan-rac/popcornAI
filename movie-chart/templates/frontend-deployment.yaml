@@ -1,0 +1,47 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-{{ .Values.frontend.name }}
+  labels:
+    app: {{ .Values.global.app }}
+    component: frontend
+spec:
+  replicas: {{ .Values.frontend.replicas }}
+  selector:
+    matchLabels:
+      app: {{ .Values.global.app }}
+      component: frontend
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.global.app }}
+        component: frontend
+    spec:
+      containers:
+        - name: {{ .Values.frontend.name }}
+          image: "{{ .Values.frontend.image }}"
+          ports:
+            - containerPort: {{ .Values.frontend.port }}
+          env:
+            # Tell frontend where to find the backend API
+            - name: BACKEND_URL
+              value: "{{ .Values.frontend.apipath }}"
+          resources:
+            requests:
+              memory: "128Mi"
+              cpu: "100m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+          livenessProbe:
+            httpGet:
+              path: /
+              port: {{ .Values.frontend.port }}
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /
+              port: {{ .Values.frontend.port }}
+            initialDelaySeconds: 5
+            periodSeconds: 5

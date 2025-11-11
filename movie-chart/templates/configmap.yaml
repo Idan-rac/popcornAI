@@ -1,0 +1,29 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  # יצירת שם מלא וייחודי לקונפיגורציה של ה-Release
+  name: {{ .Release.Name }}-config 
+  labels:
+    app.kubernetes.io/name: {{ .Values.global.app }}
+    app.kubernetes.io/component: config
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+
+data:
+  # --- 1. קונפיגורציה ל-Backend ---
+  
+  # הגדרות חיבור ל-DB: משתמש בשם ה-Service הפנימי
+  DB_HOST: "{{ .Release.Name }}-{{ .Values.database.name | default "db" }}-service" # my-movie-app-movie_db-service
+  DB_PORT: "{{ .Values.database.port | toString }}" # 5432
+  DB_NAME: "{{ .Values.database.name }}" # movie_db
+  DB_USER: "{{ .Values.database.user }}" # postgres
+  
+  # הגדרות שרת Backend
+  PORT: "{{ .Values.backend.port | toString }}" # 5000
+  NODE_ENV: "{{ .Values.backend.env.NODE_ENV }}" # development
+  JWT_EXPIRES_IN: "{{ .Values.backend.env.JWT_EXPIRES_IN }}" # 24h
+  
+  # --- 2. קונפיגורציה ל-Frontend ---
+  
+  # נתיב ה-API שאליו ה-Frontend אמור לפנות (יטופל ע"י ה-Ingress)
+  FRONTEND_API_PATH: "{{ .Values.frontend.apipath }}" # /api

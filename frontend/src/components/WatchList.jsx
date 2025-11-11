@@ -15,7 +15,7 @@ const WatchList = ({ user, onBackToChat, onLogout, onWatchlistUpdate }) => {
     try {
       setLoading(true)
       const token = localStorage.getItem('token')
-      const response = await fetch('http://localhost:5000/api/watchlist', {
+      const response = await fetch('/api/watchlist', {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -38,7 +38,7 @@ const WatchList = ({ user, onBackToChat, onLogout, onWatchlistUpdate }) => {
     try {
       const token = localStorage.getItem('token')
       
-      const response = await fetch(`http://localhost:5000/api/watchlist/${movieId}`, {
+      const response = await fetch(`/api/watchlist/${movieId}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`

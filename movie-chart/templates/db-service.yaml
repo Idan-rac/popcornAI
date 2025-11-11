@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Release.Name }}-{{ .Values.database.name | default "db" }}-service
+  labels:
+    app: {{ .Values.global.app }}
+    component: database
+spec:
+  type: ClusterIP
+  ports:
+    - name: postgres
+      port: {{ .Values.database.port }}
+      targetPort: {{ .Values.database.port }}
+      protocol: TCP
+  selector:
+    app: {{ .Values.global.app }}
+    component: database

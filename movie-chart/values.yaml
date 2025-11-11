@@ -1,0 +1,63 @@
+# --- values.yaml ---
+global:
+  dbServiceName: "movie-db-service" 
+  app: movie2
+
+# ----------------------------------------
+# 1. db settings
+database:
+  enabled: true
+  image: "postgres:15" 
+  volumeSize: "5Gi"   # גודל אחסון קבוע (PVC)
+  port: 5432
+  user: "postgres" # POSTGRES_USER
+  name: "movie-db" # POSTGRES_DB
+
+# ----------------------------------------
+# 2. backend settings
+backend:
+  image: idanrachmany/movie2-backend:latest
+  name: backend
+  replicas: 2
+  port: 5000
+  env:
+    DB_PORT: 5432
+    NODE_ENV: development
+    DB_HOST: movie-db-service
+    JWT_EXPIRES_IN: "24h"
+
+# ----------------------------------------
+# 3. frontend settings
+frontend:
+  image: idanrachmany/movie2-frontend:latest
+  name: frontend
+  replicas: 3
+  port: 3000
+  apipath: "/api" # נתיב ה-API שאליו יפנה ה-frontend
+  
+# ----------------------------------------
+# 4. Ingress settings
+ingress:
+  enabled: true
+  host: "" # Empty host allows IP-based access
+  className: "traefik"  # Changed to traefik to match your cluster
+  annotations:
+    traefik.ingress.kubernetes.io/router.entrypoints: web
+# Secret values (base64 encoded)
+secrets:
+  dbPassword: cG9zdGdyZXM=
+  jwtSecret: eW91ci1zdXBlci1zZWNyZXQtand0LWtleS1jaGFuZ2UtdGhpcy1pbi1wcm9kdWN0aW9u
+  openaiApiKey: c2stcHJvai1SNjIwTDNyVWVGZDlfTmJLT1NrWVlsRXRwU0J6THVkOXJNdjBGYXVqTlJSUTBfNU1IZmtRbXFWTldnMG1rcVRSRV9TcFhDM281blQzQmxia0ZKSzhSMWY0TkJpeDFKMFBWcnhVOWhuQWx6TFl0c2F4Rk5TZ2Y4N0hiazNQcmVjVllESUZGb3otVzdLRGIxNGI3ZlNlMEp4eExBZ0E=
+  tmdbApiKey: MWI0ZDlhMTljNjhjMGFjYWFkNGExZTc4NDI1MTU4NGY=
+
+# ----------------------------------------
+# 5. Monitoring settings
+monitoring:
+  enabled: true 
+  serviceMonitor:
+    enabled: true
+    interval: 30s
+    path: /metrics
+  # זהו ה-alias של kube-prometheus-stack
+  prometheus:
+    {}

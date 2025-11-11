@@ -3,8 +3,10 @@ name: Build & Push via Compose
 on:
   push:
     branches:
-      - main
-      - kubernetes-test
+      - main #nice
+      - master
+      - recover
+
 
 
 jobs:

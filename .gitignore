@@ -1,85 +1,26 @@
-# Environment variables
-.env
+# Environment files with secrets
+backend/config.env
 backend/.env
-*.env
+.env
+.env.local
+.env.production
 
 # Dependencies
 node_modules/
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
+backend/node_modules/
+frontend/node_modules/
 
-# Runtime data
-pids
-*.pid
-*.seed
-*.pid.lock
+# Build outputs
+dist/
+backend/dist/
+frontend/dist/
 
-# Coverage directory used by tools like istanbul
-coverage/
+# Logs
+*.log
+logs/
 
-# nyc test coverage
-.nyc_output
-
-# Grunt intermediate storage
-.grunt
-
-# Bower dependency directory
-bower_components
-
-# node-waf configuration
-.lock-wscript
-
-# Compiled binary addons
-build/Release
-
-# Dependency directories
-jspm_packages/
-
-# Optional npm cache directory
-.npm
-
-# Optional REPL history
-.node_repl_history
-
-# Output of 'npm pack'
-*.tgz
-
-# Yarn Integrity file
-.yarn-integrity
-
-# dotenv environment variables file
-.env
-
-# parcel-bundler cache
-.cache
-.parcel-cache
-
-# next.js build output
-.next
-
-# nuxt.js build output
-.nuxt
-
-# vuepress build output
-.vuepress/dist
-
-# Serverless directories
-.serverless
-
-# FuseBox cache
-.fusebox/
-
-# DynamoDB Local files
-.dynamodb/
-
-# OS generated files
+# OS files
 .DS_Store
-.DS_Store?
-._*
-.Spotlight-V100
-.Trashes
-ehthumbs.db
 Thumbs.db
 
 # IDE files
@@ -87,16 +28,34 @@ Thumbs.db
 .idea/
 *.swp
 *.swo
-*~
 
-# Logs
-logs
-*.log
+# Temporary files
+*.tmp
+*.temp
 
-# Database
-*.db
-*.sqlite
-*.sqlite3
+# Kubernetes test files
+ingress-default.yaml
+kubectl
 
-# Docker
-.dockerignore
+
+
+
+
+# Terraform-specific files
+**/.terraform/
+*.tfstate
+*.tfstate.backup
+crash.log
+*.tfvars
+*.tfvars.json
+override.tf
+override.tf.json
+*.auto.tfvars
+*.auto.tfvars.json
+
+# In-house modules
+.terraform/modules/
+
+# Lock file - **מומלץ כן להעלות את הקובץ הזה**
+# אבל אם אתה עובד לבד, אפשר להסיר אותו מהערות
+# .terraform.lock.hcl

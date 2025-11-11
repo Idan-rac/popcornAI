@@ -14,30 +14,76 @@ const Dashboard = ({ user, onLogout }) => {
   const [notification, setNotification] = useState(null)
   const [watchlistStatus, setWatchlistStatus] = useState({})
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+  const [isUserDropdownOpen, setIsUserDropdownOpen] = useState(false)
+  const [selectedProfilePicture, setSelectedProfilePicture] = useState('anime_r2_c2_processed_by_imagy.png')
+  const [isProfilePictureModalOpen, setIsProfilePictureModalOpen] = useState(false)
 
-  // Load watchlist on component mount
+  // Load watchlist and profile picture on component mount
   useEffect(() => {
     loadWatchlist()
+    loadProfilePicture()
   }, [])
+
+  // Load profile picture from localStorage
+  const loadProfilePicture = () => {
+    const savedProfilePicture = localStorage.getItem('selectedProfilePicture')
+    if (savedProfilePicture) {
+      setSelectedProfilePicture(savedProfilePicture)
+    }
+  }
 
   // Close mobile menu when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
+      // Don't close if clicking inside dropdown items
+      if (event.target.closest('.dropdown-item') || 
+          event.target.classList.contains('dropdown-item')) {
+        return
+      }
+
       if (isMobileMenuOpen && !event.target.closest('.mobile-menu-container')) {
         setIsMobileMenuOpen(false)
       }
+      
+      // Check both desktop and mobile dropdown containers
+      const isInDesktopDropdown = event.target.closest('.user-dropdown-container')
+      const isInMobileDropdown = event.target.closest('.mobile-watchlist-container') || 
+                                  event.target.closest('.mobile-user-dropdown') ||
+                                  event.target.closest('.mobile-profile-btn')
+      
+      if (isUserDropdownOpen && !isInDesktopDropdown && !isInMobileDropdown) {
+        setIsUserDropdownOpen(false)
+      }
+      if (isProfilePictureModalOpen && !event.target.closest('.profile-picture-modal')) {
+        setIsProfilePictureModalOpen(false)
+      }
     }
 
-    document.addEventListener('mousedown', handleClickOutside)
+    document.addEventListener('click', handleClickOutside)
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside)
+      document.removeEventListener('click', handleClickOutside)
     }
-  }, [isMobileMenuOpen])
+  }, [isMobileMenuOpen, isUserDropdownOpen, isProfilePictureModalOpen])
+
+  // Scroll down when recommendations are loaded
+  useEffect(() => {
+    if (recommendations) {
+      // Small delay to ensure the DOM has updated
+      setTimeout(() => {
+        const recommendationsSection = document.querySelector('.recommendations-section')
+        if (recommendationsSection) {
+          recommendationsSection.scrollIntoView({ behavior: 'smooth', block: 'start' })
+          // Scroll a bit more to show the first movie better
+          window.scrollBy({ top: 100, behavior: 'smooth' })
+        }
+      }, 100)
+    }
+  }, [recommendations])
 
   const loadWatchlist = async () => {
     try {
       const token = localStorage.getItem('token')
-      const response = await fetch('http://localhost:5000/api/watchlist', {
+      const response = await fetch('/api/watchlist', {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -64,7 +110,7 @@ const Dashboard = ({ user, onLogout }) => {
       const token = localStorage.getItem('token')
       const movieId = movie.tmdb_id || `${movie.title}-${movie.year}`
       
-      const response = await fetch('http://localhost:5000/api/watchlist', {
+      const response = await fetch('/api/watchlist', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -96,7 +142,7 @@ const Dashboard = ({ user, onLogout }) => {
     try {
       const token = localStorage.getItem('token')
       
-      const response = await fetch(`http://localhost:5000/api/watchlist/${movieId}`, {
+      const response = await fetch(`/api/watchlist/${movieId}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`
@@ -160,7 +206,7 @@ const Dashboard = ({ user, onLogout }) => {
     setRecommendations(null)
     
     try {
-      const response = await fetch('http://localhost:5000/api/recommendations', {
+      const response = await fetch('/api/recommendations', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -211,9 +257,38 @@ const Dashboard = ({ user, onLogout }) => {
     setIsMobileMenuOpen(!isMobileMenuOpen)
   }
 
-  const handleLogout = () => {
+  const toggleUserDropdown = () => {
+    setIsUserDropdownOpen(!isUserDropdownOpen)
+  }
+
+  const handleLogout = (e) => {
+    if (e) e.stopPropagation()
     setIsMobileMenuOpen(false)
+    setIsUserDropdownOpen(false)
     onLogout()
+  }
+
+  const handleWatchlistFromDropdown = (e) => {
+    if (e) e.stopPropagation()
+    setIsUserDropdownOpen(false)
+    navigateToWatchlist()
+  }
+
+  const handleChangeProfilePicture = (e) => {
+    if (e) e.stopPropagation()
+    setIsUserDropdownOpen(false)
+    setIsProfilePictureModalOpen(true)
+  }
+
+  const handleProfilePictureSelect = (pictureName) => {
+    setSelectedProfilePicture(pictureName)
+    localStorage.setItem('selectedProfilePicture', pictureName)
+    setIsProfilePictureModalOpen(false)
+    showNotification('Profile picture updated!')
+  }
+
+  const closeProfilePictureModal = () => {
+    setIsProfilePictureModalOpen(false)
   }
 
   return (
@@ -227,47 +302,77 @@ const Dashboard = ({ user, onLogout }) => {
             </div>
           </div>
           <div className="user-section">
-            <button 
-              className="watchlist-btn"
-              onClick={navigateToWatchlist}
-            >
-              ❤️ Watch List ({watchlist.length})
-            </button>
-            <span className="welcome-text">Welcome, {user.username}!</span>
-            <button onClick={onLogout} className="logout-btn">
-              Logout
-            </button>
+            <div className="profile-picture-container">
+            <img 
+              src={`/profile-pictures/${encodeURIComponent(selectedProfilePicture)}`}
+              alt="Profile"
+              className="profile-picture"
+              onClick={toggleUserDropdown}
+            />
+            </div>
+            <div className="user-dropdown-container">
+              <button 
+                className="username-btn"
+                onClick={toggleUserDropdown}
+              >
+                {user.username}
+                <span className="dropdown-arrow">▼</span>
+              </button>
+              
+              {isUserDropdownOpen && (
+                <div className="user-dropdown">
+                  <button 
+                    className="dropdown-item logout-item"
+                    onClick={handleLogout}
+                  >
+                    Logout
+                  </button>
+                  <button 
+                    className="dropdown-item"
+                    onClick={handleChangeProfilePicture}
+                  >
+                    Change Profile Picture
+                  </button>
+                  <button 
+                    className="dropdown-item"
+                    onClick={handleWatchlistFromDropdown}
+                  >
+                    Movies I Liked ({watchlist.length})
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
         </div>
-        {/* Mobile-only minimal watchlist button */}
+        {/* Mobile-only profile picture button and dropdown */}
         <div className="mobile-watchlist-container">
-          <button 
-            className="mobile-watchlist-btn"
-            onClick={navigateToWatchlist}
-            title={`Watch List (${watchlist.length})`}
-          >
-            ❤️
-          </button>
-        </div>
-        
-        {/* Mobile-only three-dots menu button */}
-        <div className="mobile-menu-container">
-          <button 
-            className="mobile-menu-btn"
-            onClick={toggleMobileMenu}
-            title="Menu"
-          >
-            ⋯
-          </button>
-          
-          {/* Mobile menu dropdown */}
-          {isMobileMenuOpen && (
-            <div className="mobile-menu-dropdown">
+          <div className="mobile-profile-btn">
+            <img 
+              src={`/profile-pictures/${encodeURIComponent(selectedProfilePicture)}`}
+              alt="Profile"
+              className="profile-picture"
+              onClick={toggleUserDropdown}
+            />
+          </div>
+          {isUserDropdownOpen && (
+            <div className="user-dropdown mobile-user-dropdown" onClick={(e) => e.stopPropagation()}>
               <button 
-                className="mobile-logout-btn"
+                className="dropdown-item logout-item"
                 onClick={handleLogout}
               >
                 Logout
+              </button>
+              <button 
+                className="dropdown-item"
+                onClick={handleChangeProfilePicture}
+              >
+                Change Profile Picture
+              </button>
+              <button 
+                className="dropdown-item"
+                onClick={handleWatchlistFromDropdown}
+              >
+                Movies I Liked ({watchlist.length})
               </button>
             </div>
           )}
@@ -327,9 +432,6 @@ const Dashboard = ({ user, onLogout }) => {
 
           {recommendations && (
             <div className="recommendations-section">
-              <h3 className="recommendations-heading">
-                🎬 Movie Recommendations for: "{recommendations.userInput}"
-              </h3>
               <div className="movies-grid">
                 {recommendations.movies.map((movie, index) => {
                   const movieId = movie.tmdb_id || `${movie.title}-${movie.year}`
@@ -447,6 +549,70 @@ const Dashboard = ({ user, onLogout }) => {
             <div className="notification-content">
               <span className="notification-icon">❤️</span>
               <span className="notification-text">{notification}</span>
+            </div>
+          </div>
+        )}
+
+        {/* Profile Picture Selection Modal */}
+        {isProfilePictureModalOpen && (
+          <div className="modal-overlay" onClick={closeProfilePictureModal}>
+            <div className="profile-picture-modal" onClick={(e) => e.stopPropagation()}>
+              <div className="modal-header">
+                <h2>Choose Your Profile Picture</h2>
+                <button className="modal-close" onClick={closeProfilePictureModal}>×</button>
+              </div>
+              <div className="profile-picture-grid">
+                {[
+                  'anime_r2_c2_processed_by_imagy.png', 'anime_r2_c3_processed_by_imagy.png', 'anime_r2_c4_processed_by_imagy.png',
+                  'anime_r3_c2_processed_by_imagy.png', 'anime_r3_c3_processed_by_imagy.png', 'anime_r3_c4_processed_by_imagy.png',
+                  'anime_r3_c5_processed_by_imagy.png', 'anime_r4_c2_processed_by_imagy.png', 'anime_r4_c3_processed_by_imagy.png',
+                  'anime_r4_c4_processed_by_imagy.png', 'anime_r4_c5_processed_by_imagy.png', 'anime_r5_c2_processed_by_imagy.png',
+                  'anime_r5_c3_processed_by_imagy.png', 'anime_r5_c4_processed_by_imagy.png', 'anime_r5_c5_processed_by_imagy.png',
+                  'anime2_r2_c2_processed_by_imagy.png', 'anime2_r2_c3_processed_by_imagy.png', 'anime2_r2_c4_processed_by_imagy.png',
+                  'anime2_r3_c2_processed_by_imagy.png', 'anime2_r3_c3_processed_by_imagy.png', 'anime2_r3_c4_processed_by_imagy.png',
+                  'anime2_r3_c5_processed_by_imagy.png', 'anime2_r4_c2_processed_by_imagy.png', 'anime2_r4_c3_processed_by_imagy.png',
+                  'anime2_r4_c4_processed_by_imagy.png', 'anime2_r4_c5_processed_by_imagy.png', 'anime2_r5_c2_processed_by_imagy.png',
+                  'anime2_r5_c3_processed_by_imagy.png', 'anime2_r5_c4_processed_by_imagy.png', 'anime2_r5_c5_processed_by_imagy.png',
+                  'blue_r2_c2_processed_by_imagy.png', 'blue_r2_c3_processed_by_imagy.png', 'blue_r2_c4_processed_by_imagy.png',
+                  'blue_r3_c2_processed_by_imagy.png', 'blue_r3_c3_processed_by_imagy.png', 'blue_r3_c5_processed_by_imagy.png',
+                  'blue_r4_c2_processed_by_imagy.png', 'blue_r4_c3_processed_by_imagy.png', 'blue_r4_c4_processed_by_imagy.png',
+                  'blue_r5_c2_processed_by_imagy.png', 'blue_r5_c5_processed_by_imagy.png', 'dark_r2_c2_processed_by_imagy.png',
+                  'dark_r2_c3_processed_by_imagy.png', 'dark_r2_c4_processed_by_imagy.png', 'dark_r2_c5_processed_by_imagy.png',
+                  'dark_r3_c2_processed_by_imagy.png', 'dark_r3_c3_processed_by_imagy.png', 'dark_r3_c4_processed_by_imagy.png',
+                  'dark_r3_c5_processed_by_imagy.png', 'dark_r4_c2_processed_by_imagy.png', 'dark_r4_c3_processed_by_imagy.png',
+                  'dark_r4_c4_processed_by_imagy.png', 'dark_r4_c5_processed_by_imagy.png', 'dark_r5_c2_processed_by_imagy.png',
+                  'dark_r5_c3_processed_by_imagy.png', 'dark_r5_c4_processed_by_imagy.png', 'dark_r5_c5_processed_by_imagy.png',
+                  'green_r2_c2_processed_by_imagy.png', 'green_r2_c3_processed_by_imagy.png', 'green_r2_c5_processed_by_imagy.png',
+                  'green_r3_c2_processed_by_imagy.png', 'green_r3_c3_processed_by_imagy.png', 'green_r3_c5_processed_by_imagy.png',
+                  'green_r4_c2_processed_by_imagy.png', 'green_r4_c3_processed_by_imagy.png', 'green_r4_c5_processed_by_imagy.png',
+                  'green_r5_c2_processed_by_imagy.png', 'green_r5_c3_processed_by_imagy.png', 'green_r5_c5_processed_by_imagy.png',
+                  'magic_r2_c2_processed_by_imagy - Copy.png', 'magic_r2_c3_processed_by_imagy.png', 'magic_r2_c4_processed_by_imagy.png',
+                  'magic_r2_c5_processed_by_imagy.png', 'magic_r3_c3_processed_by_imagy.png', 'magic_r3_c4_processed_by_imagy.png',
+                  'magic_r3_c5_processed_by_imagy.png', 'magic_r4_c2_processed_by_imagy.png', 'magic_r4_c3_processed_by_imagy.png',
+                  'magic_r4_c4_processed_by_imagy.png', 'magic_r4_c5_processed_by_imagy.png', 'magic_r5_c2_processed_by_imagy.png',
+                  'magic_r5_c3_processed_by_imagy.png', 'magic_r5_c5_processed_by_imagy.png', 'pink_r2_c2_processed_by_imagy.png',
+                  'pink_r2_c3_processed_by_imagy.png', 'pink_r2_c5_processed_by_imagy.png', 'pink_r3_c2_processed_by_imagy.png',
+                  'pink_r3_c3_processed_by_imagy.png', 'pink_r3_c4_processed_by_imagy.png', 'pink_r3_c5_processed_by_imagy.png',
+                  'pink_r4_c2_processed_by_imagy.png', 'pink_r4_c3_processed_by_imagy.png', 'pink_r4_c4_processed_by_imagy.png',
+                  'pink_r4_c5_processed_by_imagy.png', 'red_r2_c2_processed_by_imagy - Copy.png', 'red_r2_c3_processed_by_imagy.png',
+                  'red_r2_c4_processed_by_imagy.png', 'red_r2_c5_processed_by_imagy - Copy.png', 'red_r3_c2_processed_by_imagy.png',
+                  'red_r3_c3_processed_by_imagy.png', 'red_r3_c4_processed_by_imagy - Copy.png', 'red_r3_c5_processed_by_imagy.png',
+                  'red_r4_c2_processed_by_imagy.png', 'red_r4_c3_processed_by_imagy.png', 'red_r4_c4_processed_by_imagy.png',
+                  'red_r4_c5_processed_by_imagy.png'
+                ].map((pictureName) => (
+                  <div 
+                    key={pictureName}
+                    className={`profile-picture-option ${selectedProfilePicture === pictureName ? 'selected' : ''}`}
+                    onClick={() => handleProfilePictureSelect(pictureName)}
+                  >
+                    <img 
+                      src={`/profile-pictures/${encodeURIComponent(pictureName)}`}
+                      alt="Profile option"
+                      className="profile-picture-preview"
+                    />
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         )}
