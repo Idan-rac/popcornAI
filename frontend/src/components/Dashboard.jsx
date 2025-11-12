@@ -15,20 +15,48 @@ const Dashboard = ({ user, onLogout }) => {
   const [watchlistStatus, setWatchlistStatus] = useState({})
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [isUserDropdownOpen, setIsUserDropdownOpen] = useState(false)
-  const [selectedProfilePicture, setSelectedProfilePicture] = useState('anime_r2_c2_processed_by_imagy.png')
+  const [selectedProfilePicture, setSelectedProfilePicture] = useState(user?.profile_picture || 'anime_r2_c2_processed_by_imagy.png')
   const [isProfilePictureModalOpen, setIsProfilePictureModalOpen] = useState(false)
 
-  // Load watchlist and profile picture on component mount
+  // Load watchlist and profile picture on component mount or when user changes
   useEffect(() => {
-    loadWatchlist()
-    loadProfilePicture()
-  }, [])
+    // Clear watchlist state when user changes
+    setWatchlist([])
+    setWatchlistStatus({})
 
-  // Load profile picture from localStorage
-  const loadProfilePicture = () => {
-    const savedProfilePicture = localStorage.getItem('selectedProfilePicture')
-    if (savedProfilePicture) {
-      setSelectedProfilePicture(savedProfilePicture)
+    // Load fresh data for the current user
+    if (user && user.id) {
+      const loadData = async () => {
+        await loadWatchlist()
+        await loadProfilePicture()
+      }
+      loadData()
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.id]) // Reload when user ID changes
+
+  // Load profile picture from API
+  const loadProfilePicture = async () => {
+    try {
+      const token = localStorage.getItem('token')
+      const response = await fetch('/api/user/profile', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        if (data.user && data.user.profile_picture) {
+          setSelectedProfilePicture(data.user.profile_picture)
+        }
+      }
+    } catch (error) {
+      console.error('Error loading profile picture:', error)
+      // Fallback to user object if API fails
+      if (user?.profile_picture) {
+        setSelectedProfilePicture(user.profile_picture)
+      }
     }
   }
 
@@ -36,21 +64,21 @@ const Dashboard = ({ user, onLogout }) => {
   useEffect(() => {
     const handleClickOutside = (event) => {
       // Don't close if clicking inside dropdown items
-      if (event.target.closest('.dropdown-item') || 
-          event.target.classList.contains('dropdown-item')) {
+      if (event.target.closest('.dropdown-item') ||
+        event.target.classList.contains('dropdown-item')) {
         return
       }
 
       if (isMobileMenuOpen && !event.target.closest('.mobile-menu-container')) {
         setIsMobileMenuOpen(false)
       }
-      
+
       // Check both desktop and mobile dropdown containers
       const isInDesktopDropdown = event.target.closest('.user-dropdown-container')
-      const isInMobileDropdown = event.target.closest('.mobile-watchlist-container') || 
-                                  event.target.closest('.mobile-user-dropdown') ||
-                                  event.target.closest('.mobile-profile-btn')
-      
+      const isInMobileDropdown = event.target.closest('.mobile-watchlist-container') ||
+        event.target.closest('.mobile-user-dropdown') ||
+        event.target.closest('.mobile-profile-btn')
+
       if (isUserDropdownOpen && !isInDesktopDropdown && !isInMobileDropdown) {
         setIsUserDropdownOpen(false)
       }
@@ -83,25 +111,42 @@ const Dashboard = ({ user, onLogout }) => {
   const loadWatchlist = async () => {
     try {
       const token = localStorage.getItem('token')
+      if (!token) {
+        console.error('No token found, cannot load watchlist')
+        return
+      }
+
       const response = await fetch('/api/watchlist', {
         headers: {
           'Authorization': `Bearer ${token}`
-        }
+        },
+        cache: 'no-cache' // Prevent caching
       })
-      
+
       if (response.ok) {
         const data = await response.json()
-        setWatchlist(data.watchlist)
-        
+        console.log(`Loaded ${data.watchlist.length} movies for user ${user?.username}`)
+        setWatchlist(data.watchlist || [])
+
         // Create status object for quick lookup
         const status = {}
-        data.watchlist.forEach(item => {
-          status[item.movie_id] = true
-        })
+        if (data.watchlist) {
+          data.watchlist.forEach(item => {
+            status[item.movie_id] = true
+          })
+        }
         setWatchlistStatus(status)
+      } else {
+        console.error('Failed to load watchlist:', response.status, response.statusText)
+        // Clear watchlist on error
+        setWatchlist([])
+        setWatchlistStatus({})
       }
     } catch (error) {
       console.error('Error loading watchlist:', error)
+      // Clear watchlist on error
+      setWatchlist([])
+      setWatchlistStatus({})
     }
   }
 
@@ -109,7 +154,7 @@ const Dashboard = ({ user, onLogout }) => {
     try {
       const token = localStorage.getItem('token')
       const movieId = movie.tmdb_id || `${movie.title}-${movie.year}`
-      
+
       const response = await fetch('/api/watchlist', {
         method: 'POST',
         headers: {
@@ -141,7 +186,7 @@ const Dashboard = ({ user, onLogout }) => {
   const removeFromWatchlist = async (movieId) => {
     try {
       const token = localStorage.getItem('token')
-      
+
       const response = await fetch(`/api/watchlist/${movieId}`, {
         method: 'DELETE',
         headers: {
@@ -181,7 +226,7 @@ const Dashboard = ({ user, onLogout }) => {
   const handleInputChange = (e) => {
     setUserInput(e.target.value)
     setError('') // Clear error when user types
-    
+
     // Auto-expand textarea based on content
     const textarea = e.target
     textarea.style.height = 'auto'
@@ -204,7 +249,7 @@ const Dashboard = ({ user, onLogout }) => {
     setIsSubmitting(true)
     setError('')
     setRecommendations(null)
-    
+
     try {
       const response = await fetch('/api/recommendations', {
         method: 'POST',
@@ -245,7 +290,7 @@ const Dashboard = ({ user, onLogout }) => {
     setCurrentPage('chat')
     setNotification(null)
     setIsMobileMenuOpen(false)
-    
+
     // Reset textarea height to default
     const textarea = document.querySelector('.main-textarea')
     if (textarea) {
@@ -280,11 +325,37 @@ const Dashboard = ({ user, onLogout }) => {
     setIsProfilePictureModalOpen(true)
   }
 
-  const handleProfilePictureSelect = (pictureName) => {
-    setSelectedProfilePicture(pictureName)
-    localStorage.setItem('selectedProfilePicture', pictureName)
-    setIsProfilePictureModalOpen(false)
-    showNotification('Profile picture updated!')
+  const handleProfilePictureSelect = async (pictureName) => {
+    try {
+      const token = localStorage.getItem('token')
+      const response = await fetch('/api/user/profile-picture', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          profile_picture: pictureName
+        })
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        setSelectedProfilePicture(pictureName)
+        setIsProfilePictureModalOpen(false)
+        showNotification('Profile picture updated!')
+        // Update user object in parent component if needed
+        if (data.user) {
+          // Optionally update the user state in parent
+        }
+      } else {
+        const errorData = await response.json()
+        showNotification(errorData.error || 'Failed to update profile picture')
+      }
+    } catch (error) {
+      console.error('Error updating profile picture:', error)
+      showNotification('Failed to update profile picture')
+    }
   }
 
   const closeProfilePictureModal = () => {
@@ -303,37 +374,37 @@ const Dashboard = ({ user, onLogout }) => {
           </div>
           <div className="user-section">
             <div className="profile-picture-container">
-            <img 
-              src={`/profile-pictures/${encodeURIComponent(selectedProfilePicture)}`}
-              alt="Profile"
-              className="profile-picture"
-              onClick={toggleUserDropdown}
-            />
+              <img
+                src={`/profile-pictures/${encodeURIComponent(selectedProfilePicture)}`}
+                alt="Profile"
+                className="profile-picture"
+                onClick={toggleUserDropdown}
+              />
             </div>
             <div className="user-dropdown-container">
-              <button 
+              <button
                 className="username-btn"
                 onClick={toggleUserDropdown}
               >
                 {user.username}
                 <span className="dropdown-arrow">▼</span>
               </button>
-              
+
               {isUserDropdownOpen && (
                 <div className="user-dropdown">
-                  <button 
+                  <button
                     className="dropdown-item logout-item"
                     onClick={handleLogout}
                   >
                     Logout
                   </button>
-                  <button 
+                  <button
                     className="dropdown-item"
                     onClick={handleChangeProfilePicture}
                   >
                     Change Profile Picture
                   </button>
-                  <button 
+                  <button
                     className="dropdown-item"
                     onClick={handleWatchlistFromDropdown}
                   >
@@ -347,7 +418,7 @@ const Dashboard = ({ user, onLogout }) => {
         {/* Mobile-only profile picture button and dropdown */}
         <div className="mobile-watchlist-container">
           <div className="mobile-profile-btn">
-            <img 
+            <img
               src={`/profile-pictures/${encodeURIComponent(selectedProfilePicture)}`}
               alt="Profile"
               className="profile-picture"
@@ -356,19 +427,19 @@ const Dashboard = ({ user, onLogout }) => {
           </div>
           {isUserDropdownOpen && (
             <div className="user-dropdown mobile-user-dropdown" onClick={(e) => e.stopPropagation()}>
-              <button 
+              <button
                 className="dropdown-item logout-item"
                 onClick={handleLogout}
               >
                 Logout
               </button>
-              <button 
+              <button
                 className="dropdown-item"
                 onClick={handleChangeProfilePicture}
               >
                 Change Profile Picture
               </button>
-              <button 
+              <button
                 className="dropdown-item"
                 onClick={handleWatchlistFromDropdown}
               >
@@ -378,11 +449,11 @@ const Dashboard = ({ user, onLogout }) => {
           )}
         </div>
       </header>
-      
+
       {/* Conditional Rendering */}
       {currentPage === 'watchlist' ? (
-        <WatchList 
-          user={user} 
+        <WatchList
+          user={user}
           onBackToChat={navigateToChat}
           onLogout={onLogout}
           onWatchlistUpdate={loadWatchlist}
@@ -390,233 +461,233 @@ const Dashboard = ({ user, onLogout }) => {
       ) : (
         <main className="dashboard-content">
           <div className="main-input-section">
-          <div className="input-logo">
-            <PopcornLogo size={120} />
-          </div>
-          <h2 className="input-heading">Tell me how you feel and what you would like to watch</h2>
-          
-          <form onSubmit={handleSubmit} className="input-form">
-            <div className="text-area-container">
-              <textarea
-                value={userInput}
-                onChange={handleInputChange}
-                onKeyDown={handleKeyDown}
-                placeholder="I'm feeling adventurous and want to watch something with action and mystery..."
-                className="main-textarea"
-                disabled={isSubmitting}
-              />
+            <div className="input-logo">
+              <PopcornLogo size={120} />
             </div>
-            
-            <button 
-              type="submit" 
-              className="submit-input-btn"
-              disabled={isSubmitting || !userInput.trim()}
-            >
-              {isSubmitting ? (
-                <span className="loading-spinner">
-                  <span></span>
-                  <span></span>
-                  <span></span>
-                </span>
-              ) : (
-                'Get Movie Recommendations'
-              )}
-            </button>
-          </form>
+            <h2 className="input-heading">Tell me how you feel and what you would like to watch</h2>
 
-          {error && (
-            <div className="error-message">
-              {error}
-            </div>
-          )}
-
-          {recommendations && (
-            <div className="recommendations-section">
-              <div className="movies-grid">
-                {recommendations.movies.map((movie, index) => {
-                  const movieId = movie.tmdb_id || `${movie.title}-${movie.year}`
-                  const isInWatchlist = watchlistStatus[movieId]
-                  
-                  return (
-                    <div key={index} className="movie-card" onClick={() => handleMovieClick(movie)}>
-                      {movie.poster_url && (
-                        <div className="movie-poster">
-                          <img 
-                            src={movie.poster_url} 
-                            alt={`${movie.title} poster`}
-                            className="poster-image"
-                            onError={(e) => {
-                              e.target.style.display = 'none';
-                            }}
-                          />
-                          {movie.match_percentage && (
-                            <div className="match-percentage">
-                              {movie.match_percentage}% Match
-                            </div>
-                          )}
-                          <button 
-                            className={`heart-btn ${isInWatchlist ? 'in-watchlist' : ''}`}
-                            onClick={(e) => {
-                              e.stopPropagation()
-                              if (isInWatchlist) {
-                                removeFromWatchlist(movieId)
-                              } else {
-                                addToWatchlist(movie)
-                              }
-                            }}
-                          >
-                            {isInWatchlist ? '❤️' : '🤍'}
-                          </button>
-                        </div>
-                      )}
-                    <div className="movie-content">
-                      <div className="movie-header">
-                        <h4 className="movie-title">{movie.title}</h4>
-                        <div className="movie-year">{movie.year}</div>
-                      </div>
-                      <div className="movie-genre">{movie.genre}</div>
-                      <div className="movie-rating">
-                        ⭐ {movie.tmdb_rating ? movie.tmdb_rating.toFixed(1) : movie.rating}
-                      </div>
-                      <p className="movie-reason">{movie.reason}</p>
-                    </div>
-                  </div>
-                  )
-                })}
+            <form onSubmit={handleSubmit} className="input-form">
+              <div className="text-area-container">
+                <textarea
+                  value={userInput}
+                  onChange={handleInputChange}
+                  onKeyDown={handleKeyDown}
+                  placeholder="I'm feeling adventurous and want to watch something with action and mystery..."
+                  className="main-textarea"
+                  disabled={isSubmitting}
+                />
               </div>
-              <button 
-                onClick={() => {
-                  setRecommendations(null)
-                  setUserInput('')
-                }}
-                className="new-search-btn"
+
+              <button
+                type="submit"
+                className="submit-input-btn"
+                disabled={isSubmitting || !userInput.trim()}
               >
-                Search Again
+                {isSubmitting ? (
+                  <span className="loading-spinner">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                  </span>
+                ) : (
+                  'Get Movie Recommendations'
+                )}
               </button>
+            </form>
+
+            {error && (
+              <div className="error-message">
+                {error}
+              </div>
+            )}
+
+            {recommendations && (
+              <div className="recommendations-section">
+                <div className="movies-grid">
+                  {recommendations.movies.map((movie, index) => {
+                    const movieId = movie.tmdb_id || `${movie.title}-${movie.year}`
+                    const isInWatchlist = watchlistStatus[movieId]
+
+                    return (
+                      <div key={index} className="movie-card" onClick={() => handleMovieClick(movie)}>
+                        {movie.poster_url && (
+                          <div className="movie-poster">
+                            <img
+                              src={movie.poster_url}
+                              alt={`${movie.title} poster`}
+                              className="poster-image"
+                              onError={(e) => {
+                                e.target.style.display = 'none';
+                              }}
+                            />
+                            {movie.match_percentage && (
+                              <div className="match-percentage">
+                                {movie.match_percentage}% Match
+                              </div>
+                            )}
+                            <button
+                              className={`heart-btn ${isInWatchlist ? 'in-watchlist' : ''}`}
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                if (isInWatchlist) {
+                                  removeFromWatchlist(movieId)
+                                } else {
+                                  addToWatchlist(movie)
+                                }
+                              }}
+                            >
+                              {isInWatchlist ? '❤️' : '🤍'}
+                            </button>
+                          </div>
+                        )}
+                        <div className="movie-content">
+                          <div className="movie-header">
+                            <h4 className="movie-title">{movie.title}</h4>
+                            <div className="movie-year">{movie.year}</div>
+                          </div>
+                          <div className="movie-genre">{movie.genre}</div>
+                          <div className="movie-rating">
+                            ⭐ {movie.tmdb_rating ? movie.tmdb_rating.toFixed(1) : movie.rating}
+                          </div>
+                          <p className="movie-reason">{movie.reason}</p>
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+                <button
+                  onClick={() => {
+                    setRecommendations(null)
+                    setUserInput('')
+                  }}
+                  className="new-search-btn"
+                >
+                  Search Again
+                </button>
+              </div>
+            )}
+          </div>
+
+          {/* Movie Detail Modal */}
+          {selectedMovie && (
+            <div className="modal-overlay" onClick={closeModal}>
+              <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+                <button className="modal-close" onClick={closeModal}>×</button>
+                <div className="modal-movie-details">
+                  <div className="modal-poster-section">
+                    {selectedMovie.poster_url && (
+                      <img
+                        src={selectedMovie.poster_url}
+                        alt={`${selectedMovie.title} poster`}
+                        className="modal-poster"
+                      />
+                    )}
+                    {selectedMovie.match_percentage && (
+                      <div className="modal-match-circle">
+                        <div className="match-percentage-large">{selectedMovie.match_percentage}%</div>
+                        <div className="match-label">Match</div>
+                      </div>
+                    )}
+                  </div>
+                  <div className="modal-info-section">
+                    <h2 className="modal-title">{selectedMovie.title}</h2>
+                    <div className="modal-meta">
+                      <div className="modal-year">{selectedMovie.year}</div>
+                      <div className="modal-genre">{selectedMovie.genre}</div>
+                      <div className="modal-rating">⭐ {selectedMovie.tmdb_rating ? selectedMovie.tmdb_rating.toFixed(1) : selectedMovie.rating}</div>
+                    </div>
+
+                    <div className="modal-explanation">
+                      <h3>Why This Movie is Perfect for You</h3>
+                      <p>{selectedMovie.detailed_explanation || selectedMovie.reason}</p>
+                    </div>
+
+                    {selectedMovie.overview && (
+                      <div className="modal-overview">
+                        <h3>Plot Summary</h3>
+                        <p>{selectedMovie.overview}</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
             </div>
           )}
-        </div>
 
-        {/* Movie Detail Modal */}
-        {selectedMovie && (
-          <div className="modal-overlay" onClick={closeModal}>
-            <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-              <button className="modal-close" onClick={closeModal}>×</button>
-              <div className="modal-movie-details">
-                <div className="modal-poster-section">
-                  {selectedMovie.poster_url && (
-                    <img 
-                      src={selectedMovie.poster_url} 
-                      alt={`${selectedMovie.title} poster`}
-                      className="modal-poster"
-                    />
-                  )}
-                  {selectedMovie.match_percentage && (
-                    <div className="modal-match-circle">
-                      <div className="match-percentage-large">{selectedMovie.match_percentage}%</div>
-                      <div className="match-label">Match</div>
-                    </div>
-                  )}
+          {/* Notification Popup */}
+          {notification && (
+            <div className="notification-popup">
+              <div className="notification-content">
+                <span className="notification-icon">❤️</span>
+                <span className="notification-text">{notification}</span>
+              </div>
+            </div>
+          )}
+
+          {/* Profile Picture Selection Modal */}
+          {isProfilePictureModalOpen && (
+            <div className="modal-overlay" onClick={closeProfilePictureModal}>
+              <div className="profile-picture-modal" onClick={(e) => e.stopPropagation()}>
+                <div className="modal-header">
+                  <h2>Choose Your Profile Picture</h2>
+                  <button className="modal-close" onClick={closeProfilePictureModal}>×</button>
                 </div>
-                <div className="modal-info-section">
-                  <h2 className="modal-title">{selectedMovie.title}</h2>
-                  <div className="modal-meta">
-                    <div className="modal-year">{selectedMovie.year}</div>
-                    <div className="modal-genre">{selectedMovie.genre}</div>
-                    <div className="modal-rating">⭐ {selectedMovie.tmdb_rating ? selectedMovie.tmdb_rating.toFixed(1) : selectedMovie.rating}</div>
-                  </div>
-                  
-                  <div className="modal-explanation">
-                    <h3>Why This Movie is Perfect for You</h3>
-                    <p>{selectedMovie.detailed_explanation || selectedMovie.reason}</p>
-                  </div>
-
-                  {selectedMovie.overview && (
-                    <div className="modal-overview">
-                      <h3>Plot Summary</h3>
-                      <p>{selectedMovie.overview}</p>
+                <div className="profile-picture-grid">
+                  {[
+                    'anime_r2_c2_processed_by_imagy.png', 'anime_r2_c3_processed_by_imagy.png', 'anime_r2_c4_processed_by_imagy.png',
+                    'anime_r3_c2_processed_by_imagy.png', 'anime_r3_c3_processed_by_imagy.png', 'anime_r3_c4_processed_by_imagy.png',
+                    'anime_r3_c5_processed_by_imagy.png', 'anime_r4_c2_processed_by_imagy.png', 'anime_r4_c3_processed_by_imagy.png',
+                    'anime_r4_c4_processed_by_imagy.png', 'anime_r4_c5_processed_by_imagy.png', 'anime_r5_c2_processed_by_imagy.png',
+                    'anime_r5_c3_processed_by_imagy.png', 'anime_r5_c4_processed_by_imagy.png', 'anime_r5_c5_processed_by_imagy.png',
+                    'anime2_r2_c2_processed_by_imagy.png', 'anime2_r2_c3_processed_by_imagy.png', 'anime2_r2_c4_processed_by_imagy.png',
+                    'anime2_r3_c2_processed_by_imagy.png', 'anime2_r3_c3_processed_by_imagy.png', 'anime2_r3_c4_processed_by_imagy.png',
+                    'anime2_r3_c5_processed_by_imagy.png', 'anime2_r4_c2_processed_by_imagy.png', 'anime2_r4_c3_processed_by_imagy.png',
+                    'anime2_r4_c4_processed_by_imagy.png', 'anime2_r4_c5_processed_by_imagy.png', 'anime2_r5_c2_processed_by_imagy.png',
+                    'anime2_r5_c3_processed_by_imagy.png', 'anime2_r5_c4_processed_by_imagy.png', 'anime2_r5_c5_processed_by_imagy.png',
+                    'blue_r2_c2_processed_by_imagy.png', 'blue_r2_c3_processed_by_imagy.png', 'blue_r2_c4_processed_by_imagy.png',
+                    'blue_r3_c2_processed_by_imagy.png', 'blue_r3_c3_processed_by_imagy.png', 'blue_r3_c5_processed_by_imagy.png',
+                    'blue_r4_c2_processed_by_imagy.png', 'blue_r4_c3_processed_by_imagy.png', 'blue_r4_c4_processed_by_imagy.png',
+                    'blue_r5_c2_processed_by_imagy.png', 'blue_r5_c5_processed_by_imagy.png', 'dark_r2_c2_processed_by_imagy.png',
+                    'dark_r2_c3_processed_by_imagy.png', 'dark_r2_c4_processed_by_imagy.png', 'dark_r2_c5_processed_by_imagy.png',
+                    'dark_r3_c2_processed_by_imagy.png', 'dark_r3_c3_processed_by_imagy.png', 'dark_r3_c4_processed_by_imagy.png',
+                    'dark_r3_c5_processed_by_imagy.png', 'dark_r4_c2_processed_by_imagy.png', 'dark_r4_c3_processed_by_imagy.png',
+                    'dark_r4_c4_processed_by_imagy.png', 'dark_r4_c5_processed_by_imagy.png', 'dark_r5_c2_processed_by_imagy.png',
+                    'dark_r5_c3_processed_by_imagy.png', 'dark_r5_c4_processed_by_imagy.png', 'dark_r5_c5_processed_by_imagy.png',
+                    'green_r2_c2_processed_by_imagy.png', 'green_r2_c3_processed_by_imagy.png', 'green_r2_c5_processed_by_imagy.png',
+                    'green_r3_c2_processed_by_imagy.png', 'green_r3_c3_processed_by_imagy.png', 'green_r3_c5_processed_by_imagy.png',
+                    'green_r4_c2_processed_by_imagy.png', 'green_r4_c3_processed_by_imagy.png', 'green_r4_c5_processed_by_imagy.png',
+                    'green_r5_c2_processed_by_imagy.png', 'green_r5_c3_processed_by_imagy.png', 'green_r5_c5_processed_by_imagy.png',
+                    'magic_r2_c2_processed_by_imagy - Copy.png', 'magic_r2_c3_processed_by_imagy.png', 'magic_r2_c4_processed_by_imagy.png',
+                    'magic_r2_c5_processed_by_imagy.png', 'magic_r3_c3_processed_by_imagy.png', 'magic_r3_c4_processed_by_imagy.png',
+                    'magic_r3_c5_processed_by_imagy.png', 'magic_r4_c2_processed_by_imagy.png', 'magic_r4_c3_processed_by_imagy.png',
+                    'magic_r4_c4_processed_by_imagy.png', 'magic_r4_c5_processed_by_imagy.png', 'magic_r5_c2_processed_by_imagy.png',
+                    'magic_r5_c3_processed_by_imagy.png', 'magic_r5_c5_processed_by_imagy.png', 'pink_r2_c2_processed_by_imagy.png',
+                    'pink_r2_c3_processed_by_imagy.png', 'pink_r2_c5_processed_by_imagy.png', 'pink_r3_c2_processed_by_imagy.png',
+                    'pink_r3_c3_processed_by_imagy.png', 'pink_r3_c4_processed_by_imagy.png', 'pink_r3_c5_processed_by_imagy.png',
+                    'pink_r4_c2_processed_by_imagy.png', 'pink_r4_c3_processed_by_imagy.png', 'pink_r4_c4_processed_by_imagy.png',
+                    'pink_r4_c5_processed_by_imagy.png', 'red_r2_c2_processed_by_imagy - Copy.png', 'red_r2_c3_processed_by_imagy.png',
+                    'red_r2_c4_processed_by_imagy.png', 'red_r2_c5_processed_by_imagy - Copy.png', 'red_r3_c2_processed_by_imagy.png',
+                    'red_r3_c3_processed_by_imagy.png', 'red_r3_c4_processed_by_imagy - Copy.png', 'red_r3_c5_processed_by_imagy.png',
+                    'red_r4_c2_processed_by_imagy.png', 'red_r4_c3_processed_by_imagy.png', 'red_r4_c4_processed_by_imagy.png',
+                    'red_r4_c5_processed_by_imagy.png'
+                  ].map((pictureName) => (
+                    <div
+                      key={pictureName}
+                      className={`profile-picture-option ${selectedProfilePicture === pictureName ? 'selected' : ''}`}
+                      onClick={() => handleProfilePictureSelect(pictureName)}
+                    >
+                      <img
+                        src={`/profile-pictures/${encodeURIComponent(pictureName)}`}
+                        alt="Profile option"
+                        className="profile-picture-preview"
+                      />
                     </div>
-                  )}
+                  ))}
                 </div>
               </div>
             </div>
-          </div>
-        )}
-
-        {/* Notification Popup */}
-        {notification && (
-          <div className="notification-popup">
-            <div className="notification-content">
-              <span className="notification-icon">❤️</span>
-              <span className="notification-text">{notification}</span>
-            </div>
-          </div>
-        )}
-
-        {/* Profile Picture Selection Modal */}
-        {isProfilePictureModalOpen && (
-          <div className="modal-overlay" onClick={closeProfilePictureModal}>
-            <div className="profile-picture-modal" onClick={(e) => e.stopPropagation()}>
-              <div className="modal-header">
-                <h2>Choose Your Profile Picture</h2>
-                <button className="modal-close" onClick={closeProfilePictureModal}>×</button>
-              </div>
-              <div className="profile-picture-grid">
-                {[
-                  'anime_r2_c2_processed_by_imagy.png', 'anime_r2_c3_processed_by_imagy.png', 'anime_r2_c4_processed_by_imagy.png',
-                  'anime_r3_c2_processed_by_imagy.png', 'anime_r3_c3_processed_by_imagy.png', 'anime_r3_c4_processed_by_imagy.png',
-                  'anime_r3_c5_processed_by_imagy.png', 'anime_r4_c2_processed_by_imagy.png', 'anime_r4_c3_processed_by_imagy.png',
-                  'anime_r4_c4_processed_by_imagy.png', 'anime_r4_c5_processed_by_imagy.png', 'anime_r5_c2_processed_by_imagy.png',
-                  'anime_r5_c3_processed_by_imagy.png', 'anime_r5_c4_processed_by_imagy.png', 'anime_r5_c5_processed_by_imagy.png',
-                  'anime2_r2_c2_processed_by_imagy.png', 'anime2_r2_c3_processed_by_imagy.png', 'anime2_r2_c4_processed_by_imagy.png',
-                  'anime2_r3_c2_processed_by_imagy.png', 'anime2_r3_c3_processed_by_imagy.png', 'anime2_r3_c4_processed_by_imagy.png',
-                  'anime2_r3_c5_processed_by_imagy.png', 'anime2_r4_c2_processed_by_imagy.png', 'anime2_r4_c3_processed_by_imagy.png',
-                  'anime2_r4_c4_processed_by_imagy.png', 'anime2_r4_c5_processed_by_imagy.png', 'anime2_r5_c2_processed_by_imagy.png',
-                  'anime2_r5_c3_processed_by_imagy.png', 'anime2_r5_c4_processed_by_imagy.png', 'anime2_r5_c5_processed_by_imagy.png',
-                  'blue_r2_c2_processed_by_imagy.png', 'blue_r2_c3_processed_by_imagy.png', 'blue_r2_c4_processed_by_imagy.png',
-                  'blue_r3_c2_processed_by_imagy.png', 'blue_r3_c3_processed_by_imagy.png', 'blue_r3_c5_processed_by_imagy.png',
-                  'blue_r4_c2_processed_by_imagy.png', 'blue_r4_c3_processed_by_imagy.png', 'blue_r4_c4_processed_by_imagy.png',
-                  'blue_r5_c2_processed_by_imagy.png', 'blue_r5_c5_processed_by_imagy.png', 'dark_r2_c2_processed_by_imagy.png',
-                  'dark_r2_c3_processed_by_imagy.png', 'dark_r2_c4_processed_by_imagy.png', 'dark_r2_c5_processed_by_imagy.png',
-                  'dark_r3_c2_processed_by_imagy.png', 'dark_r3_c3_processed_by_imagy.png', 'dark_r3_c4_processed_by_imagy.png',
-                  'dark_r3_c5_processed_by_imagy.png', 'dark_r4_c2_processed_by_imagy.png', 'dark_r4_c3_processed_by_imagy.png',
-                  'dark_r4_c4_processed_by_imagy.png', 'dark_r4_c5_processed_by_imagy.png', 'dark_r5_c2_processed_by_imagy.png',
-                  'dark_r5_c3_processed_by_imagy.png', 'dark_r5_c4_processed_by_imagy.png', 'dark_r5_c5_processed_by_imagy.png',
-                  'green_r2_c2_processed_by_imagy.png', 'green_r2_c3_processed_by_imagy.png', 'green_r2_c5_processed_by_imagy.png',
-                  'green_r3_c2_processed_by_imagy.png', 'green_r3_c3_processed_by_imagy.png', 'green_r3_c5_processed_by_imagy.png',
-                  'green_r4_c2_processed_by_imagy.png', 'green_r4_c3_processed_by_imagy.png', 'green_r4_c5_processed_by_imagy.png',
-                  'green_r5_c2_processed_by_imagy.png', 'green_r5_c3_processed_by_imagy.png', 'green_r5_c5_processed_by_imagy.png',
-                  'magic_r2_c2_processed_by_imagy - Copy.png', 'magic_r2_c3_processed_by_imagy.png', 'magic_r2_c4_processed_by_imagy.png',
-                  'magic_r2_c5_processed_by_imagy.png', 'magic_r3_c3_processed_by_imagy.png', 'magic_r3_c4_processed_by_imagy.png',
-                  'magic_r3_c5_processed_by_imagy.png', 'magic_r4_c2_processed_by_imagy.png', 'magic_r4_c3_processed_by_imagy.png',
-                  'magic_r4_c4_processed_by_imagy.png', 'magic_r4_c5_processed_by_imagy.png', 'magic_r5_c2_processed_by_imagy.png',
-                  'magic_r5_c3_processed_by_imagy.png', 'magic_r5_c5_processed_by_imagy.png', 'pink_r2_c2_processed_by_imagy.png',
-                  'pink_r2_c3_processed_by_imagy.png', 'pink_r2_c5_processed_by_imagy.png', 'pink_r3_c2_processed_by_imagy.png',
-                  'pink_r3_c3_processed_by_imagy.png', 'pink_r3_c4_processed_by_imagy.png', 'pink_r3_c5_processed_by_imagy.png',
-                  'pink_r4_c2_processed_by_imagy.png', 'pink_r4_c3_processed_by_imagy.png', 'pink_r4_c4_processed_by_imagy.png',
-                  'pink_r4_c5_processed_by_imagy.png', 'red_r2_c2_processed_by_imagy - Copy.png', 'red_r2_c3_processed_by_imagy.png',
-                  'red_r2_c4_processed_by_imagy.png', 'red_r2_c5_processed_by_imagy - Copy.png', 'red_r3_c2_processed_by_imagy.png',
-                  'red_r3_c3_processed_by_imagy.png', 'red_r3_c4_processed_by_imagy - Copy.png', 'red_r3_c5_processed_by_imagy.png',
-                  'red_r4_c2_processed_by_imagy.png', 'red_r4_c3_processed_by_imagy.png', 'red_r4_c4_processed_by_imagy.png',
-                  'red_r4_c5_processed_by_imagy.png'
-                ].map((pictureName) => (
-                  <div 
-                    key={pictureName}
-                    className={`profile-picture-option ${selectedProfilePicture === pictureName ? 'selected' : ''}`}
-                    onClick={() => handleProfilePictureSelect(pictureName)}
-                  >
-                    <img 
-                      src={`/profile-pictures/${encodeURIComponent(pictureName)}`}
-                      alt="Profile option"
-                      className="profile-picture-preview"
-                    />
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        )}
-      </main>
+          )}
+        </main>
       )}
     </div>
   )

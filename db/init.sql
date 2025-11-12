@@ -3,6 +3,7 @@ CREATE TABLE IF NOT EXISTS users (
     id SERIAL PRIMARY KEY,
     username VARCHAR(50) UNIQUE NOT NULL,
     password VARCHAR(255) NOT NULL,
+    profile_picture VARCHAR(255) DEFAULT 'anime_r2_c2_processed_by_imagy.png',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -23,3 +24,14 @@ CREATE TABLE IF NOT EXISTS watchlist (
 -- Create indexes for better performance
 CREATE INDEX IF NOT EXISTS idx_watchlist_user_id ON watchlist(user_id);
 CREATE INDEX IF NOT EXISTS idx_watchlist_movie_id ON watchlist(movie_id);
+
+-- Add profile_picture column to existing users table if it doesn't exist (for migrations)
+DO $$ 
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1 FROM information_schema.columns 
+        WHERE table_name = 'users' AND column_name = 'profile_picture'
+    ) THEN
+        ALTER TABLE users ADD COLUMN profile_picture VARCHAR(255) DEFAULT 'anime_r2_c2_processed_by_imagy.png';
+    END IF;
+END $$;

@@ -22,7 +22,7 @@ const httpRequestsTotal = new client.Counter({
 });
 
 const httpRequestDuration = new client.Histogram({
-  name: 'http_request_duration_seconds', 
+  name: 'http_request_duration_seconds',
   help: 'Duration of HTTP requests in seconds',
   labelNames: ['method', 'route', 'status_code'],
   buckets: [0.1, 0.5, 1, 2, 5],
@@ -48,24 +48,24 @@ app.use(express.json());
 // ADD THIS MIDDLEWARE - Metrics collection (must be after express.json())
 app.use((req, res, next) => {
   const start = Date.now();
-  
+
   res.on('finish', () => {
     const duration = (Date.now() - start) / 1000;
     const route = req.route ? req.route.path : req.path;
-    
+
     httpRequestsTotal.inc({
       method: req.method,
       route: route,
       status_code: res.statusCode
     });
-    
+
     httpRequestDuration.observe({
       method: req.method,
-      route: route, 
+      route: route,
       status_code: res.statusCode
     }, duration);
   });
-  
+
   next();
 });
 
@@ -98,7 +98,7 @@ async function searchMovieOnTMDB(movieTitle, year) {
     const searchUrl = `${TMDB_BASE_URL}/search/movie?api_key=${process.env.TMDB_API_KEY}&query=${encodeURIComponent(movieTitle)}&year=${year}`;
     const response = await fetch(searchUrl);
     const data = await response.json();
-    
+
     if (data.results && data.results.length > 0) {
       const movie = data.results[0];
       return {
@@ -143,8 +143,16 @@ const authenticateToken = (req, res, next) => {
 
   jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
     if (err) {
+      console.error('JWT verification error:', err);
       return res.status(403).json({ error: 'Invalid or expired token' });
     }
+
+    // Validate that userId exists in token
+    if (!user.userId) {
+      console.error('Token missing userId:', user);
+      return res.status(403).json({ error: 'Invalid token: missing user ID' });
+    }
+
     req.user = user;
     next();
   });
@@ -182,7 +190,7 @@ app.post('/api/register', async (req, res) => {
 
     // Create user
     const result = await pool.query(
-      'INSERT INTO users (username, password) VALUES ($1, $2) RETURNING id, username, created_at',
+      'INSERT INTO users (username, password) VALUES ($1, $2) RETURNING id, username, profile_picture, created_at',
       [username, hashedPassword]
     );
 
@@ -201,6 +209,7 @@ app.post('/api/register', async (req, res) => {
       user: {
         id: user.id,
         username: user.username,
+        profile_picture: user.profile_picture,
         created_at: user.created_at
       }
     });
@@ -223,7 +232,7 @@ app.post('/api/login', async (req, res) => {
 
     // Find user
     const result = await pool.query(
-      'SELECT id, username, password, created_at FROM users WHERE username = $1',
+      'SELECT id, username, password, profile_picture, created_at FROM users WHERE username = $1',
       [username]
     );
 
@@ -253,6 +262,7 @@ app.post('/api/login', async (req, res) => {
       user: {
         id: user.id,
         username: user.username,
+        profile_picture: user.profile_picture,
         created_at: user.created_at
       }
     });
@@ -317,10 +327,10 @@ Make sure the recommendations are diverse and cover different aspects of what th
     });
 
     const responseText = completion.choices[0].message.content;
-    
+
     try {
       const movies = JSON.parse(responseText);
-      
+
       if (!Array.isArray(movies) || movies.length === 0) {
         throw new Error('Invalid response format');
       }
@@ -375,9 +385,26 @@ app.post('/api/watchlist', authenticateToken, async (req, res) => {
     const { movie_id, movie_title, movie_poster } = req.body;
     const userId = req.user.userId;
 
+    // Validate userId exists and is a number
+    if (!userId || isNaN(userId)) {
+      console.error('Invalid userId in token:', userId, 'Token payload:', req.user);
+      return res.status(401).json({ error: 'Invalid user authentication' });
+    }
+
     // Validate input
     if (!movie_id || !movie_title) {
       return res.status(400).json({ error: 'Movie ID and title are required' });
+    }
+
+    // Verify user exists
+    const userCheck = await pool.query(
+      'SELECT id FROM users WHERE id = $1',
+      [userId]
+    );
+
+    if (userCheck.rows.length === 0) {
+      console.error('User not found for userId:', userId);
+      return res.status(404).json({ error: 'User not found' });
     }
 
     // Check if movie is already in watchlist
@@ -396,6 +423,8 @@ app.post('/api/watchlist', authenticateToken, async (req, res) => {
       [userId, movie_id, movie_title, movie_poster]
     );
 
+    console.log(`Added movie ${movie_id} to watchlist for userId ${userId}`);
+
     res.status(201).json({
       message: 'Movie added to watchlist',
       watchlistItem: result.rows[0]
@@ -412,10 +441,29 @@ app.get('/api/watchlist', authenticateToken, async (req, res) => {
   try {
     const userId = req.user.userId;
 
+    // Validate userId exists and is a number
+    if (!userId || isNaN(userId)) {
+      console.error('Invalid userId in token:', userId, 'Token payload:', req.user);
+      return res.status(401).json({ error: 'Invalid user authentication' });
+    }
+
+    // Verify user exists
+    const userCheck = await pool.query(
+      'SELECT id FROM users WHERE id = $1',
+      [userId]
+    );
+
+    if (userCheck.rows.length === 0) {
+      console.error('User not found for userId:', userId);
+      return res.status(404).json({ error: 'User not found' });
+    }
+
     const result = await pool.query(
       'SELECT * FROM watchlist WHERE user_id = $1 ORDER BY created_at DESC',
       [userId]
     );
+
+    console.log(`Watchlist query for userId ${userId}: Found ${result.rows.length} movies`);
 
     res.json({
       watchlist: result.rows
@@ -433,6 +481,12 @@ app.delete('/api/watchlist/:movieId', authenticateToken, async (req, res) => {
     const { movieId } = req.params;
     const userId = req.user.userId;
 
+    // Validate userId exists and is a number
+    if (!userId || isNaN(userId)) {
+      console.error('Invalid userId in token:', userId, 'Token payload:', req.user);
+      return res.status(401).json({ error: 'Invalid user authentication' });
+    }
+
     const result = await pool.query(
       'DELETE FROM watchlist WHERE user_id = $1 AND movie_id = $2 RETURNING *',
       [userId, movieId]
@@ -441,6 +495,8 @@ app.delete('/api/watchlist/:movieId', authenticateToken, async (req, res) => {
     if (result.rows.length === 0) {
       return res.status(404).json({ error: 'Movie not found in watchlist' });
     }
+
+    console.log(`Removed movie ${movieId} from watchlist for userId ${userId}`);
 
     res.json({
       message: 'Movie removed from watchlist',
@@ -459,6 +515,12 @@ app.get('/api/watchlist/check/:movieId', authenticateToken, async (req, res) => 
     const { movieId } = req.params;
     const userId = req.user.userId;
 
+    // Validate userId exists and is a number
+    if (!userId || isNaN(userId)) {
+      console.error('Invalid userId in token:', userId, 'Token payload:', req.user);
+      return res.status(401).json({ error: 'Invalid user authentication' });
+    }
+
     const result = await pool.query(
       'SELECT id FROM watchlist WHERE user_id = $1 AND movie_id = $2',
       [userId, movieId]
@@ -470,6 +532,103 @@ app.get('/api/watchlist/check/:movieId', authenticateToken, async (req, res) => 
 
   } catch (error) {
     console.error('Check watchlist error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Admin endpoint to check watchlist data integrity (for debugging)
+app.get('/api/admin/watchlist-debug', authenticateToken, async (req, res) => {
+  try {
+    const userId = req.user.userId;
+
+    // Get all watchlist entries for this user
+    const userWatchlist = await pool.query(
+      'SELECT * FROM watchlist WHERE user_id = $1 ORDER BY created_at DESC',
+      [userId]
+    );
+
+    // Get count of all watchlist entries (for debugging)
+    const allWatchlist = await pool.query(
+      'SELECT user_id, COUNT(*) as count FROM watchlist GROUP BY user_id'
+    );
+
+    // Check for any orphaned entries (user_id that doesn't exist in users table)
+    const orphanedEntries = await pool.query(
+      `SELECT w.* FROM watchlist w 
+       LEFT JOIN users u ON w.user_id = u.id 
+       WHERE u.id IS NULL`
+    );
+
+    res.json({
+      currentUser: {
+        userId: userId,
+        username: req.user.username,
+        watchlistCount: userWatchlist.rows.length,
+        watchlist: userWatchlist.rows
+      },
+      allUsersWatchlistCounts: allWatchlist.rows,
+      orphanedEntries: orphanedEntries.rows.length,
+      orphanedDetails: orphanedEntries.rows
+    });
+
+  } catch (error) {
+    console.error('Watchlist debug error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Get user profile (including profile picture)
+app.get('/api/user/profile', authenticateToken, async (req, res) => {
+  try {
+    const userId = req.user.userId;
+
+    const result = await pool.query(
+      'SELECT id, username, profile_picture, created_at FROM users WHERE id = $1',
+      [userId]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    res.json({
+      user: result.rows[0]
+    });
+
+  } catch (error) {
+    console.error('Get user profile error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Update user profile picture
+app.put('/api/user/profile-picture', authenticateToken, async (req, res) => {
+  try {
+    const { profile_picture } = req.body;
+    const userId = req.user.userId;
+
+    // Validate input
+    if (!profile_picture) {
+      return res.status(400).json({ error: 'Profile picture is required' });
+    }
+
+    // Update profile picture
+    const result = await pool.query(
+      'UPDATE users SET profile_picture = $1 WHERE id = $2 RETURNING id, username, profile_picture, created_at',
+      [profile_picture, userId]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    res.json({
+      message: 'Profile picture updated successfully',
+      user: result.rows[0]
+    });
+
+  } catch (error) {
+    console.error('Update profile picture error:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -487,8 +646,8 @@ app.get('/metrics', async (req, res) => {
 
 // Enhanced health check endpoint
 app.get('/health', (req, res) => {
-  res.status(200).json({ 
-    status: 'healthy', 
+  res.status(200).json({
+    status: 'healthy',
     timestamp: new Date().toISOString(),
     uptime: process.uptime(),
     environment: process.env.NODE_ENV || 'development'
