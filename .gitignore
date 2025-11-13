@@ -37,3 +37,7 @@ Thumbs.db
 ingress-default.yaml
 kubectl
 
+
+helm
+/movie-chart/templates/secret.yaml
+
