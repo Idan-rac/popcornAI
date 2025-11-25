@@ -38,6 +38,6 @@ ingress-default.yaml
 kubectl
 
 
-helm
+#helm
 /movie-chart/templates/secret.yaml
 
