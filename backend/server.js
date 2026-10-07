@@ -37,8 +37,9 @@ const dbConnectionsActive = new client.Gauge({
 // END OF METRICS SETUP
 
 // Initialize OpenAI
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY
+const groq = new OpenAI({
+  apiKey: process.env.GROQ_API_KEY,
+  baseURL: 'https://api.groq.com/openai/v1'
 });
 
 // Middleware
@@ -300,8 +301,8 @@ Format your response as a valid JSON array like this:
 
 Make sure the recommendations are diverse and cover different aspects of what the user is looking for.`;
 
-    const completion = await openai.chat.completions.create({
-      model: "gpt-3.5-turbo",
+    const completion = await groq.chat.completions.create({
+      model: "openai/gpt-oss-20b",
       messages: [
         {
           role: "system",

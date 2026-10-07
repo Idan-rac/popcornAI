@@ -41,11 +41,11 @@ spec:
                   key: JWT_SECRET
                   
             # API Keys for external services
-            - name: OPENAI_API_KEY
+            - name: GROQ_API_KEY
               valueFrom:
                 secretKeyRef:
                   name: {{ .Release.Name }}-secrets
-                  key: OPENAI_API_KEY
+                  key: GROQ_API_KEY
                   
             - name: TMDB_API_KEY
               valueFrom:
